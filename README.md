@@ -1,6 +1,6 @@
 # Festholic
 
-Festholic es un ecosistema web para la industria del entretenimiento. Centraliza la operación de eventos, la gestión de entradas y la comunicación con el público en una sola plataforma.
+Festholic es una plataforma digital para gestionar eventos, entradas y contenido.
 
 El proyecto conecta tres experiencias:
 
