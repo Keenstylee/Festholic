@@ -1,0 +1,28 @@
+name = "iampromote-api"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://festholic.com,https://www.festholic.com,http://127.0.0.1:5178"
+ALLOWED_EMAIL = "keenscy10@gmail.com"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "iampromote_db"
+database_id = "b2567d16-9019-4e12-ab0d-4390bf9b48ff"
+migrations_dir = "migrations"
+remote = true
+
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "iampromote-files"
+remote = true
+
+[observability]
+enabled = true
+
+[assets]
+directory = "../public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*", "/"]

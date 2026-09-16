@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff3d9a" />
+    <meta name="description" content="Calendario editorial y misiones de difusion para media partners de eventos." />
+    <title>I Am Promote | Media Partners</title>
+    <link rel="manifest" href="manifest.webmanifest?v=20260616-1" crossorigin="use-credentials" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="stylesheet" href="media.css?v=20260617-3" />
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+    <script src="media.js?v=20260617-2" defer></script>
+      <link rel="stylesheet" href="startup-loader.css?v=2026082901" />
+  </head>
+  <body>
+    <div class="startup-loader" id="startupLoader" data-auto-hide="true" role="status" aria-live="polite">
+      <div class="startup-loader__brand">
+        <img class="startup-loader__logo" src="img/logo/festholic.png" alt="Festholic" />
+        <small>Workspace de eventos</small>
+      </div>
+      <div class="startup-loader__panel">
+        <div class="startup-loader__visual" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="startup-loader__copy">
+          <small>Sincronización segura</small>
+          <p>Preparando tu experiencia</p>
+          <span>Organizando eventos, contenido y herramientas.</span>
+        </div>
+        <div class="startup-loader__track" aria-hidden="true"><span></span></div>
+        <div class="startup-loader__steps" aria-hidden="true"><span><i></i>Eventos</span><span><i></i>Contenido</span><span><i></i>Gestión</span></div>
+      </div>
+    </div>
+    <div class="media-glow glow-a"></div>
+    <div class="media-glow glow-b"></div>
+
+    <div class="media-app">
+      <aside class="media-sidebar" id="mediaSidebar">
+        <div class="brand">
+          <div class="brand-mark">IP</div>
+          <div>
+            <strong>I Am Promote</strong>
+            <span>Ticket workspace</span>
+          </div>
+        </div>
+
+        <div class="panel-switcher" aria-label="Cambiar panel">
+          <a href="index.html"><i data-lucide="briefcase-business"></i>Promotores</a>
+          <a href="fan.html"><i data-lucide="party-popper"></i>Asistentes</a>
+          <a class="active" href="media.html"><i data-lucide="megaphone"></i>Media</a>
+        </div>
+
+        <nav class="media-nav" aria-label="Panel de media partners">
+          <a class="active" href="#calendarSection"><i data-lucide="calendar-clock"></i><span>Calendario</span></a>
+          <a href="#missionsSection"><i data-lucide="target"></i><span>Misiones</span></a>
+          <a href="#eventsSection"><i data-lucide="radio-tower"></i><span>Eventos</span></a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="storage-note">
+            <i data-lucide="hard-drive"></i>
+            <div><strong>Modo local</strong><span>Plan guardado en este dispositivo</span></div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+      <div class="media-main">
+        <header class="media-topbar">
+          <button class="icon-button menu-toggle" id="menuBtn" type="button" aria-label="Abrir menu"><i data-lucide="menu"></i></button>
+          <div class="topbar-title">
+            <p>Media partners</p>
+            <h1>Plan de difusion</h1>
+          </div>
+          <button class="profile-pill" id="copyPlanBtn" type="button">
+            <span class="profile-avatar">MP</span>
+            <span><strong>Copiar plan</strong><small>Resumen semanal</small></span>
+            <i data-lucide="copy"></i>
+          </button>
+        </header>
+
+        <main class="media-content">
+          <section class="hero-panel">
+            <div>
+              <span class="hero-kicker"><i data-lucide="sparkles"></i> Operación difusion</span>
+              <h2>Organiza reels, noticias y recordatorios desde el anuncio hasta el dia del evento.</h2>
+              <p>Arma una rutina semanal para no improvisar: que publicar, cuando subirlo, que reforzar y que evento necesita mas movimiento.</p>
+            </div>
+            <div class="hero-actions">
+              <button class="primary-action" id="newCampaignBtn" type="button"><i data-lucide="calendar-plus"></i>Nuevo evento</button>
+              <button class="primary-action" id="newMissionBtn" type="button"><i data-lucide="plus"></i>Nueva mision</button>
+              <button class="ghost-action" id="seedWeekBtn" type="button"><i data-lucide="wand-sparkles"></i>Crear semana</button>
+            </div>
+          </section>
+
+          <section class="media-summary" aria-label="Resumen">
+            <article>
+              <span><i data-lucide="calendar-check"></i></span>
+              <p>Misiones activas</p>
+              <strong id="activeMissionCount">0</strong>
+            </article>
+            <article>
+              <span><i data-lucide="check-circle-2"></i></span>
+              <p>Completadas</p>
+              <strong id="doneMissionCount">0</strong>
+            </article>
+            <article>
+              <span><i data-lucide="flame"></i></span>
+              <p>Prioridad</p>
+              <strong id="priorityEventName">Sin eventos</strong>
+            </article>
+            <article>
+              <span><i data-lucide="clapperboard"></i></span>
+              <p>Videos faltantes</p>
+              <strong id="pendingVideoCount">0</strong>
+            </article>
+            <article>
+              <span><i data-lucide="image"></i></span>
+              <p>Posts faltantes</p>
+              <strong id="pendingPostCount">0</strong>
+            </article>
+          </section>
+
+          <section class="section-block" id="calendarSection">
+            <div class="section-heading">
+              <div>
+                <p>Agenda editorial</p>
+                <h2>Calendario de publicaciones</h2>
+              </div>
+              <button class="text-button" id="todayBtn" type="button">Ver pendientes <i data-lucide="arrow-down"></i></button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+          </section>
+
+          <section class="section-block" id="missionsSection">
+            <div class="section-heading">
+              <div>
+                <p>Semana actual</p>
+                <h2>Misiones de difusion</h2>
+              </div>
+              <button class="text-button" id="clearDoneBtn" type="button">Limpiar hechas <i data-lucide="trash-2"></i></button>
+            </div>
+            <div class="mission-list" id="missionList"></div>
+          </section>
+
+          <section class="section-block" id="eventsSection">
+            <div class="section-heading">
+              <div>
+                <p>Eventos en campana</p>
+                <h2>Plan por evento</h2>
+              </div>
+            </div>
+            <div class="event-plan-grid" id="eventPlanGrid"></div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <dialog class="media-modal" id="missionModal">
+      <form method="dialog" id="missionForm">
+        <div class="modal-head">
+          <div>
+            <p>Nueva tarea</p>
+            <h2>Mision de difusion</h2>
+          </div>
+          <button class="icon-button" value="cancel" type="button" data-close-modal><i data-lucide="x"></i></button>
+        </div>
+        <div class="form-grid">
+          <label class="wide"><span>Titulo</span><input id="missionTitle" required placeholder="Ej. Reel con precio early bird" /></label>
+          <label><span>Evento</span><select id="missionEvent"></select></label>
+          <label><span>Canal</span><select id="missionChannel"><option>Instagram</option><option>TikTok</option><option>Noticia web</option><option>WhatsApp</option><option>Facebook</option></select></label>
+          <label><span>Tipo</span><select id="missionKind"><option value="video">Video/Reel</option><option value="post">Post/Flyer</option><option value="news">Noticia</option><option value="story">Historia</option><option value="other">Otro</option></select></label>
+          <label><span>Fecha</span><input id="missionDate" type="date" required /></label>
+          <label><span>Hora</span><input id="missionTime" type="time" value="19:00" /></label>
+          <label class="wide"><span>Notas</span><textarea id="missionNotes" rows="3" placeholder="Copy, idea del video, flyer, hook o CTA."></textarea></label>
+        </div>
+        <div class="modal-actions">
+          <button class="ghost-action" type="button" data-close-modal>Cancelar</button>
+          <button class="primary-action" type="submit"><i data-lucide="save"></i>Guardar mision</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="media-modal" id="campaignModal">
+      <form method="dialog" id="campaignForm">
+        <div class="modal-head">
+          <div>
+            <p>Nueva campana</p>
+            <h2>Evento para difundir</h2>
+          </div>
+          <button class="icon-button" value="cancel" type="button" data-close-modal><i data-lucide="x"></i></button>
+        </div>
+        <div class="form-grid">
+          <label class="wide"><span>Nombre del evento</span><input id="campaignName" required placeholder="Ej. Romantic Style Vol. 1" /></label>
+          <label><span>Fecha del evento</span><input id="campaignDate" type="datetime-local" required /></label>
+          <label><span>Lugar</span><input id="campaignVenue" placeholder="Ej. Cocos, Lima" /></label>
+          <label><span>Videos a publicar</span><input id="campaignVideos" type="number" min="0" value="20" /></label>
+          <label><span>Posts a publicar</span><input id="campaignPosts" type="number" min="0" value="8" /></label>
+          <label class="wide"><span>Imagen o flyer</span><select id="campaignImage"><option value="fan-mana.png">Mana</option><option value="fan-hugel.png">Hugel</option><option value="fan-cochinola.jpg">Cochinola</option></select></label>
+          <label class="wide"><span>Enfoque de la campana</span><textarea id="campaignAngle" rows="3" placeholder="Ej. Anuncio, precios, grupo de WhatsApp, countdown, recordatorios y ultimo llamado."></textarea></label>
+        </div>
+        <div class="modal-actions">
+          <button class="ghost-action" type="button" data-close-modal>Cancelar</button>
+          <button class="primary-action" type="submit"><i data-lucide="save"></i>Crear campana</button>
+        </div>
+      </form>
+    </dialog>
+      <script src="startup-loader.js?v=2026082903"></script>
+  </body>
+</html>

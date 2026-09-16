@@ -1,0 +1,12 @@
+node_modules/
+.wrangler/
+tmp/
+output/
+.env
+.env.*
+!.env.example
+secrets.toml
+*.local
+*.bak*
+cloudflare/.dev.vars
+cloudflare/.wrangler-*/

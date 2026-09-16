@@ -1,0 +1,617 @@
+﻿<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <meta name="description" content="Gestor privado de entradas para promotores de eventos." />
+    <title>I Am Promote</title>
+    <link rel="manifest" href="manifest.webmanifest?v=20260616-1" crossorigin="use-credentials" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=20260614-1" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=20260614-1" />
+    <link rel="stylesheet" href="styles.css?v=20260913221616" />
+    <style>
+      .panel-switcher { display:flex; gap:4px; margin:0 0 14px; padding:4px; border:1px solid rgba(255,255,255,.11); border-radius:999px; background:rgba(255,255,255,.04); }
+      .panel-switcher a { flex:1; display:flex; align-items:center; justify-content:center; gap:6px; min-height:34px; padding:0 8px; border-radius:999px; color:#bfb6cd; font-size:11px; font-weight:800; text-decoration:none; }
+      .panel-switcher a.active { color:#fff; background:linear-gradient(135deg, rgba(155,92,255,.95), rgba(255,61,154,.9)); box-shadow:0 7px 22px rgba(155,92,255,.25); }
+      .panel-switcher svg { width:14px; }
+    </style>
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" defer></script>
+    <script src="qrcode.bundle.js?v=20260614-1" defer></script>
+    <script src="app.js?v=20260913221616" defer></script>
+      <link rel="stylesheet" href="startup-loader.css?v=2026082901" />
+  </head>
+  <body>
+    <div class="startup-loader" id="startupLoader" role="status" aria-live="polite">
+      <div class="startup-loader__brand">
+        <img class="startup-loader__logo" src="img/logo/festholic.png" alt="Festholic" />
+        <small>Workspace de eventos</small>
+      </div>
+      <div class="startup-loader__panel">
+        <div class="startup-loader__visual" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="startup-loader__copy">
+          <small>Sincronización segura</small>
+          <p>Preparando tu experiencia</p>
+          <span>Organizando eventos, contenido y herramientas.</span>
+        </div>
+        <div class="startup-loader__track" aria-hidden="true"><span></span></div>
+        <div class="startup-loader__steps" aria-hidden="true"><span><i></i>Eventos</span><span><i></i>Contenido</span><span><i></i>Gestión</span></div>
+      </div>
+    </div>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-mark">IP</div>
+          <div>
+            <strong>I Am Promote</strong>
+            <span>Ticket workspace</span>
+          </div>
+        </div>
+
+        <div class="panel-switcher" aria-label="Cambiar panel">
+          <a class="active" href="index.html"><i data-lucide="briefcase-business"></i>Promotores</a>
+          <a href="fan.html"><i data-lucide="party-popper"></i>Asistentes</a>
+          <a href="media.html"><i data-lucide="megaphone"></i>Media</a>
+        </div>
+
+        <nav class="nav-list" aria-label="Principal">
+          <button class="nav-item active" data-view="dashboard">
+            <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+          </button>
+          <button class="nav-item" data-view="events">
+            <i data-lucide="calendar-days"></i><span>Eventos</span>
+          </button>
+          <button class="nav-item" data-view="inventory">
+            <i data-lucide="ticket-check"></i><span>Entradas</span>
+          </button>
+          <button class="nav-item" data-view="clients">
+            <i data-lucide="contact-round"></i><span>Clientes</span>
+          </button>
+          <button class="nav-item" data-view="messages">
+            <i data-lucide="messages-square"></i><span>Mensajes</span>
+          </button>
+          <button class="nav-item" data-view="generator">
+            <i data-lucide="file-down"></i><span>Generar PDF</span>
+          </button>
+          <a class="nav-item" href="/generador-pdf.html">
+            <i data-lucide="scan-line"></i><span>Digitalizador de entradas</span>
+          </a>
+          <button class="nav-item" data-view="trash">
+            <i data-lucide="trash-2"></i><span>Papelera</span>
+            <span class="nav-count" id="trashNavCount">0</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="storage-note">
+            <i data-lucide="hard-drive"></i>
+            <div><strong id="storageModeTitle">Modo local</strong><span id="storageModeCopy">Datos guardados en este dispositivo</span></div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <button class="icon-btn mobile-only" id="menuBtn" aria-label="Abrir menú" title="Abrir menú">
+            <i data-lucide="menu"></i>
+          </button>
+          <div class="topbar-title">
+            <p id="viewEyebrow">Resumen</p>
+            <h1 id="viewTitle">Dashboard</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="icon-btn" id="exportBtn" aria-label="Exportar respaldo" title="Exportar respaldo">
+              <i data-lucide="download"></i>
+            </button>
+            <label class="icon-btn" aria-label="Importar respaldo" title="Importar respaldo">
+              <i data-lucide="upload"></i>
+              <input id="importInput" type="file" accept="application/json" hidden />
+            </label>
+            <button class="primary-btn" id="newEventBtn">
+              <i data-lucide="plus"></i><span>Nuevo evento</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="content">
+          <section class="view active" id="dashboardView">
+            <div class="metrics-grid" id="metricsGrid"></div>
+
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Operación actual</p>
+                <h2>Eventos activos</h2>
+              </div>
+              <button class="text-btn" data-go-view="events">Ver todos <i data-lucide="arrow-right"></i></button>
+            </div>
+            <div class="event-grid" id="dashboardEvents"></div>
+
+            <div class="dashboard-lower">
+              <section class="panel">
+                <div class="panel-heading">
+                  <div><p class="eyebrow">Atención</p><h2>Pendientes importantes</h2></div>
+                </div>
+                <div class="attention-list" id="attentionList"></div>
+              </section>
+              <section class="panel">
+                <div class="panel-heading">
+                  <div><p class="eyebrow">Registro</p><h2>Actividad reciente</h2></div>
+                </div>
+                <div class="activity-list" id="activityList"></div>
+              </section>
+            </div>
+          </section>
+
+          <section class="view" id="eventsView">
+            <div class="toolbar">
+              <label class="search-box">
+                <i data-lucide="search"></i>
+                <input id="eventSearch" type="search" placeholder="Buscar evento, lugar o fecha" />
+              </label>
+              <div class="segmented" id="eventStatusFilter">
+                <button class="active" data-value="active">Activos</button>
+                <button data-value="archived">Archivados</button>
+                <button data-value="all">Todos</button>
+              </div>
+            </div>
+            <div class="event-grid" id="eventsGrid"></div>
+          </section>
+
+          <section class="view" id="inventoryView">
+            <div id="inventoryEmpty" class="empty-state">
+              <div class="empty-icon"><i data-lucide="calendar-search"></i></div>
+              <h2>Selecciona un evento</h2>
+              <p>Entra a un evento para administrar sus PDF, imágenes, códigos y accesos por lista.</p>
+              <button class="secondary-btn" data-go-view="events">Ver eventos</button>
+            </div>
+
+            <div id="inventoryWorkspace" hidden>
+              <div class="inventory-header">
+                <button class="icon-btn" id="backToEventsBtn" title="Volver a eventos">
+                  <i data-lucide="arrow-left"></i>
+                </button>
+                <div class="inventory-event-cover" id="inventoryCover"></div>
+                <div class="inventory-event-info">
+                  <p class="eyebrow" id="inventoryMeta"></p>
+                  <h2 id="inventoryTitle"></h2>
+                  <div class="mini-stats" id="inventoryMiniStats"></div>
+                </div>
+                <div class="inventory-header-actions">
+                  <button class="secondary-btn" id="editCurrentEventBtn"><i data-lucide="pencil"></i>Editar</button>
+                                    <button class="secondary-btn inventory-reserve-btn" id="addClientFromInventoryBtn"><i data-lucide="user-round-plus"></i>Nueva reserva</button>
+<button class="primary-btn" id="addTicketsBtn"><i data-lucide="plus"></i>Crear entrada</button>
+                </div>
+              </div>
+
+              <div class="toolbar inventory-toolbar">
+                <label class="search-box">
+                  <i data-lucide="search"></i>
+                  <input id="ticketSearch" type="search" placeholder="Buscar entrada, dueño o WhatsApp" />
+                </label>
+                <select id="ticketStatusFilter" class="select-control" aria-label="Filtrar estado">
+                  <option value="all">Todos</option>
+                  <option value="available">Disponibles</option>
+                  <option value="reserved">Reservadas</option>
+                  <option value="sold">Vendidas</option>
+                  <option value="delivered">Entregadas</option>
+                  <option value="cancelled">Anuladas</option>
+                </select>
+                <select id="ticketPaymentFilter" class="select-control" aria-label="Filtrar pago">
+                  <option value="all">Pago</option>
+                  <option value="pending">Pago pendiente</option>
+                  <option value="partial">Pago parcial</option>
+                  <option value="paid">Pagado</option>
+                  <option value="refunded">Reembolsado</option>
+                </select>
+                <select id="ticketTypeFilter" class="select-control" aria-label="Filtrar formato">
+                  <option value="all">Formato</option>
+                  <option value="pdf">PDF</option>
+                  <option value="image">Imagen / QR</option>
+                  <option value="code">Código</option>
+                  <option value="list">Lista</option>
+                </select>
+              </div>
+
+
+              <div class="inventory-status-chips" data-inventory-chips aria-label="Filtros rapidos de estado">
+                <button type="button" class="active" data-status-chip="all">Todos</button>
+                <button type="button" data-status-chip="sold"><span aria-hidden="true"></span>Vendidas</button>
+                <button type="button" data-status-chip="available"><span aria-hidden="true"></span>Disponibles</button>
+                <button type="button" data-status-chip="reserved"><span aria-hidden="true"></span>Reservas</button>
+              </div>              <div class="bulk-bar" id="bulkBar" hidden>
+                <strong><span id="selectedCount">0</span> seleccionadas</strong>
+                <div>
+                  <button class="primary-btn small" id="bulkSaleBtn"><i data-lucide="badge-check"></i>Registrar venta</button>
+                  <button class="secondary-btn small" id="bulkShareBtn" hidden><i data-lucide="share-2"></i>Compartir seleccionadas</button>
+                  <button class="secondary-btn small" id="bulkAvailableBtn">Marcar disponibles</button>
+                  <button class="danger-btn small" id="bulkDeleteBtn"><i data-lucide="trash-2"></i>Eliminar</button>
+                </div>
+              </div>
+
+              <div class="inventory-list-head"><strong id="inventoryListTitle">Entradas</strong><span>Mas recientes <i data-lucide="chevron-down"></i></span></div><div class="ticket-table-wrap">
+                <table class="ticket-table">
+                  <thead>
+                    <tr>
+                      <th><input type="checkbox" id="selectAllTickets" aria-label="Seleccionar todas" /></th>
+                      <th>Entrada</th>
+                      <th>Formato</th>
+                      <th>Zona</th>
+                      <th>Precio</th>
+                      <th>Estado</th>
+                      <th>Dueño</th>
+                      <th>Pago</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ticketTableBody"></tbody>
+                </table>
+                <div class="ticket-mobile-list" id="ticketMobileList"></div>
+              </div>
+            </div><nav class="inventory-mobile-nav" aria-label="Navegacion movil de inventario"><button class="active" type="button"><i data-lucide="ticket"></i><span>Inventario</span></button><button type="button" id="mobileReserveShortcut" data-add-client-current><i data-lucide="users"></i><span>Reservas</span></button><button class="mobile-create" type="button" id="mobileCreateShortcut" data-open-upload-current><i data-lucide="plus"></i></button><button type="button" data-go-view="dashboard"><i data-lucide="bar-chart-3"></i><span>Reportes</span></button><button type="button" data-go-view="messages"><i data-lucide="settings"></i><span>Ajustes</span></button></nav></section><section class="view" id="clientsView">
+            <div class="client-metrics" id="clientMetrics"></div>
+
+            <div class="toolbar clients-toolbar">
+              <label class="search-box">
+                <i data-lucide="search"></i>
+                <input id="clientSearch" type="search" placeholder="Buscar por nombre, WhatsApp o etiqueta" />
+              </label>
+              <select id="clientStageFilter" class="select-control" aria-label="Filtrar etapa">
+                <option value="all">Todas las etapas</option>
+                <option value="new">Nuevo contacto</option>
+                <option value="info">Pidió información</option>
+                <option value="pending">Pendiente de pago</option>
+                <option value="paid">Pago confirmado</option>
+                <option value="delivered">Entrada entregada</option>
+                <option value="inactive">Inactivo</option>
+              </select>
+              <select id="clientEventFilter" class="select-control" aria-label="Filtrar evento">
+                <option value="all">Todos los eventos</option>
+              </select>
+              <button class="secondary-btn" id="importTicketClientsBtn"><i data-lucide="users-round"></i>Importar compradores</button>
+              <button class="primary-btn" id="newClientBtn"><i data-lucide="user-plus"></i>Nuevo cliente</button>
+            </div>
+
+            <div class="client-list" id="clientList"></div>
+          </section>
+
+          <section class="view" id="messagesView">
+            <div class="messages-toolbar panel">
+              <label class="field">
+                <span>Evento</span>
+                <select id="messageEventId"></select>
+              </label>
+              <label class="field">
+                <span>WhatsApp del cliente (opcional)</span>
+                <input id="messageRecipientPhone" inputmode="tel" placeholder="+51 999 999 999" />
+              </label>
+              <div class="messages-toolbar-actions">
+                <button class="secondary-btn" id="resetMessagesBtn" type="button"><i data-lucide="wand-sparkles"></i>Crear sugeridos</button>
+                <button class="primary-btn" id="saveMessagesBtn" type="button"><i data-lucide="save"></i>Guardar mensajes</button>
+              </div>
+            </div>
+
+            <div id="messagesEmpty" class="empty-state" hidden>
+              <div class="empty-icon"><i data-lucide="calendar-search"></i></div>
+              <h2>Primero crea un evento</h2>
+              <p>Los mensajes automáticos se organizan por evento.</p>
+              <button class="secondary-btn" data-go-view="events">Ir a eventos</button>
+            </div>
+
+            <div id="messagesWorkspace">
+              <section class="panel payment-settings">
+                <div class="panel-heading">
+                  <div><p class="eyebrow">Cobros</p><h2>Datos de pago del evento</h2></div>
+                  <span class="generator-icon"><i data-lucide="smartphone"></i></span>
+                </div>
+                <div class="form-grid">
+                  <label class="field"><span>Número para Yape / Plin</span><input id="messagePaymentPhone" inputmode="tel" placeholder="999 999 999" /></label>
+                  <label class="field"><span>Titular de la cuenta</span><input id="messagePaymentOwner" placeholder="Nombre del titular" /></label>
+                </div>
+              </section>
+
+              <section class="panel flyer-settings">
+                <div class="panel-heading">
+                  <div><p class="eyebrow">Material del evento</p><h2>Flyer para compartir</h2></div>
+                  <span class="generator-icon"><i data-lucide="image-plus"></i></span>
+                </div>
+                <div class="flyer-manager">
+                  <div class="flyer-preview" id="messageFlyerPreview">
+                    <i data-lucide="image"></i><span>Sin flyer cargado</span>
+                  </div>
+                  <div class="flyer-manager-copy">
+                    <p>Sube una imagen o PDF. Podrás adjuntarlo al compartir cualquiera de los mensajes.</p>
+                    <div class="flyer-actions">
+                      <label class="secondary-btn">
+                        <i data-lucide="upload"></i><span>Subir flyer</span>
+                        <input id="messageFlyerInput" type="file" accept="image/*,application/pdf" hidden />
+                      </label>
+                      <button class="secondary-btn" id="viewMessageFlyerBtn" type="button"><i data-lucide="eye"></i>Ver</button>
+                      <button class="danger-btn" id="deleteMessageFlyerBtn" type="button"><i data-lucide="trash-2"></i>Eliminar</button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <div class="message-grid" id="messageGrid"></div>
+            </div>
+          </section>
+
+          <section class="view" id="generatorView">
+            <div class="generator-layout">
+              <form class="panel generator-form" id="provisionalPdfForm">
+                <div class="panel-heading">
+                  <div>
+                    <p class="eyebrow">Reserva temporal</p>
+                    <h2>Generar entrada provisional</h2>
+                  </div>
+                  <span class="generator-icon"><i data-lucide="file-down"></i></span>
+                </div>
+                <p class="generator-intro">Elige el evento y completa los datos que aparecerán en el PDF. No se modificará el inventario de entradas.</p>
+
+                <div class="form-grid generator-fields">
+                  <label class="field field-wide">
+                    <span>Evento</span>
+                    <select id="pdfEventId" required></select>
+                  </label>
+                  <label class="field"><span>Zona</span><input id="pdfZone" required placeholder="General, VIP, Box..." /></label>
+                  <label class="field"><span>Cantidad</span><input id="pdfQuantity" type="number" min="1" max="20" value="1" required /></label>
+                  <label class="field"><span>Nombre o alias (opcional)</span><input id="pdfBuyerName" placeholder="Nombre del comprador" /></label>
+                  <label class="field"><span>WhatsApp (opcional)</span><input id="pdfBuyerPhone" inputmode="tel" placeholder="+51 999 999 999" /></label>
+                  <label class="field"><span>Estado del pago</span><select id="pdfPaymentStatus"><option value="pending">Pendiente</option><option value="partial">Parcial</option><option value="paid">Pagado</option></select></label>
+                  <label class="field"><span>Monto total</span><input id="pdfTotal" type="number" min="0" step="0.01" value="0" /></label>
+                </div>
+
+                <div class="generator-notice">
+                  <i data-lucide="info"></i>
+                  <p>El documento mostrará claramente las etiquetas <strong>PROVISIONAL</strong> y <strong>NO VÁLIDA PARA INGRESO</strong>.</p>
+                </div>
+
+                <button class="primary-btn generator-submit" id="generateStandalonePdfBtn">
+                  <i data-lucide="file-down"></i>Generar y compartir PDF
+                </button>
+              </form>
+
+              <aside class="panel generator-preview" id="generatorPreview">
+                <div class="generator-preview-cover" id="generatorPreviewCover"><i data-lucide="calendar-days"></i></div>
+                <p class="eyebrow">Vista del evento</p>
+                <h2 id="generatorPreviewName">Selecciona un evento</h2>
+                <div class="generator-preview-meta">
+                  <span><i data-lucide="calendar"></i><span id="generatorPreviewDate">Fecha pendiente</span></span>
+                  <span><i data-lucide="map-pin"></i><span id="generatorPreviewVenue">Lugar pendiente</span></span>
+                </div>
+                <div class="generator-preview-tags">
+                  <span>QR identificador</span>
+                  <span>Operación única</span>
+                  <span>PDF vertical</span>
+                </div>
+              </aside>
+            </div>
+          </section>
+
+          <section class="view" id="trashView">
+            <div class="section-heading">
+              <div><p class="eyebrow">Recuperación</p><h2>Elementos eliminados</h2></div>
+              <button class="danger-btn" id="emptyTrashBtn"><i data-lucide="trash-2"></i>Vaciar papelera</button>
+            </div>
+            <div class="trash-list" id="trashList"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div class="drawer-backdrop" id="sidebarBackdrop"></div>
+
+    <dialog class="modal" id="eventModal">
+      <form method="dialog" id="eventForm">
+        <div class="modal-header">
+          <div><p class="eyebrow">Evento</p><h2 id="eventModalTitle">Nuevo evento</h2></div>
+          <button type="button" class="icon-btn" data-close-dialog="eventModal" aria-label="Cerrar"><i data-lucide="x"></i></button>
+        </div>
+        <input type="hidden" id="eventId" />
+        <div class="form-grid">
+          <label class="field field-wide"><span>Nombre del evento</span><input id="eventName" required placeholder="Ej. HUGEL Lima" /></label>
+          <label class="field"><span>Fecha</span><input id="eventDate" type="date" required /></label>
+          <label class="field"><span>Lugar</span><input id="eventVenue" placeholder="Ej. Paradiso Lima" /></label>
+          <label class="field"><span>Imagen del evento</span><input id="eventImage" type="file" accept="image/*" /></label>
+          <label class="field"><span>Estado</span><select id="eventStatus"><option value="active">Activo</option><option value="archived">Archivado</option></select></label>
+        </div>
+        <div class="image-preview" id="eventImagePreview"><i data-lucide="image"></i><span>Vista previa</span></div>
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn" data-close-dialog="eventModal">Cancelar</button>
+          <button class="primary-btn" id="saveEventBtn" value="default"><i data-lucide="save"></i>Guardar evento</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal modal-large" id="ticketUploadModal">
+      <form method="dialog" id="ticketUploadForm">
+        <div class="modal-header">
+          <div><p class="eyebrow">Inventario</p><h2>Agregar entradas</h2></div>
+          <button type="button" class="icon-btn" data-close-dialog="ticketUploadModal" aria-label="Cerrar"><i data-lucide="x"></i></button>
+        </div>
+        <div class="format-tabs" id="formatTabs">
+          <button type="button" class="active" data-format="file"><i data-lucide="files"></i>PDF / imágenes</button>
+          <button type="button" data-format="code"><i data-lucide="key-round"></i>Códigos</button>
+          <button type="button" data-format="list"><i data-lucide="list-checks"></i>Lista</button>
+        </div>
+
+        <div class="upload-mode active" data-upload-mode="file">
+          <label class="drop-zone" id="dropZone">
+            <i data-lucide="upload-cloud"></i>
+            <strong>Arrastra PDF o imágenes aquí</strong>
+            <span>También puedes seleccionar varios archivos</span>
+            <input id="ticketFiles" type="file" accept="application/pdf,image/*" multiple hidden />
+          </label>
+          <div class="file-queue" id="fileQueue"></div>
+        </div>
+
+        <div class="upload-mode" data-upload-mode="code">
+          <label class="field field-wide">
+            <span>Códigos, uno por línea</span>
+            <textarea id="ticketCodes" rows="8" placeholder="ABC123&#10;DEF456&#10;GHI789"></textarea>
+          </label>
+        </div>
+
+        <div class="upload-mode" data-upload-mode="list">
+          <label class="field">
+            <span>Cantidad de cupos</span>
+            <input id="listQuantity" type="number" min="1" max="500" value="1" />
+          </label>
+          <p class="helper">Cada cupo aparecerá como una entrada independiente para asignar un comprador.</p>
+        </div>
+
+        <div class="form-grid upload-common">
+          <label class="field"><span>Zona</span><input id="ticketZone" required placeholder="General, VIP, Box..." /></label>
+          <label class="field"><span>Precio base</span><input id="ticketPrice" type="number" min="0" step="0.01" required /></label>
+          <label class="field"><span>Prefijo interno</span><input id="ticketPrefix" placeholder="Ej. HUGEL-GEN" /></label>
+          <label class="field"><span>Estado inicial</span><select id="ticketInitialStatus"><option value="available">Disponible</option><option value="reserved">Reservada</option></select></label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn" data-close-dialog="ticketUploadModal">Cancelar</button>
+          <button class="primary-btn" id="confirmTicketUploadBtn" value="default"><i data-lucide="package-plus"></i>Agregar al inventario</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal modal-large" id="ticketModal">
+      <form method="dialog" id="ticketForm">
+        <div class="modal-header">
+          <div><p class="eyebrow">Entrada</p><h2 id="ticketModalTitle">Gestionar entrada</h2></div>
+          <button type="button" class="icon-btn" data-close-dialog="ticketModal" aria-label="Cerrar"><i data-lucide="x"></i></button>
+        </div>
+        <input type="hidden" id="editingTicketId" />
+        <div class="ticket-detail-head">
+          <div class="file-tile" id="ticketFileTile"></div>
+          <div>
+            <p class="eyebrow" id="ticketDetailFormat"></p>
+            <h3 id="ticketDetailCode"></h3>
+            <p id="ticketDetailMeta"></p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label class="field"><span>Estado de entrada</span><select id="editTicketStatus"><option value="available">Disponible</option><option value="reserved">Reservada</option><option value="sold">Vendida</option><option value="delivered">Entregada</option><option value="cancelled">Anulada</option></select></label>
+          <label class="field"><span>Estado del pago</span><select id="editPaymentStatus"><option value="pending">Pendiente</option><option value="partial">Parcial</option><option value="paid">Pagado</option><option value="refunded">Reembolsado</option></select></label>
+          <label class="field"><span>Nombre (opcional)</span><input id="buyerName" placeholder="Nombre o alias del comprador" /></label>
+          <label class="field"><span>WhatsApp</span><input id="buyerPhone" inputmode="tel" placeholder="+51 999 999 999" /></label>
+          <label class="field"><span>DNI / documento</span><input id="buyerDocument" placeholder="Opcional" /></label>
+          <label class="field"><span>Precio vendido</span><input id="salePrice" type="number" min="0" step="0.01" /></label>
+          <label class="field"><span>Método de pago</span><select id="paymentMethod"><option value="">Sin registrar</option><option value="yape">Yape</option><option value="plin">Plin</option><option value="transfer">Transferencia</option><option value="cash">Efectivo</option><option value="card">Tarjeta</option></select></label>
+          <label class="field field-wide"><span>Notas internas</span><textarea id="ticketNotes" rows="3" placeholder="Detalles de entrega, saldo pendiente, observaciones..."></textarea></label>
+        </div>
+
+        <div class="quick-actions" id="ticketQuickActions">
+          <button type="button" class="secondary-btn" id="previewTicketBtn"><i data-lucide="eye"></i>Ver archivo</button>
+          <button type="button" class="secondary-btn" id="downloadTicketBtn"><i data-lucide="download"></i>Descargar</button>
+          <button type="button" class="secondary-btn" id="shareTicketBtn"><i data-lucide="share-2"></i>Compartir</button>
+          <button type="button" class="secondary-btn" id="whatsappTicketBtn"><i data-lucide="message-circle"></i>WhatsApp</button>
+          <button type="button" class="danger-btn" id="deleteTicketBtn"><i data-lucide="trash-2"></i>Eliminar</button>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn" data-close-dialog="ticketModal">Cancelar</button>
+          <button class="primary-btn" id="saveTicketBtn" value="default"><i data-lucide="save"></i>Guardar cambios</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal modal-large" id="clientModal">
+      <form method="dialog" id="clientForm">
+        <div class="modal-header">
+          <div><p class="eyebrow">Contacto</p><h2 id="clientModalTitle">Nuevo cliente</h2></div>
+          <button type="button" class="icon-btn" data-close-dialog="clientModal" aria-label="Cerrar"><i data-lucide="x"></i></button>
+        </div>
+        <input type="hidden" id="clientId" />
+
+        <div class="form-grid">
+          <label class="field"><span>WhatsApp</span><input id="clientPhone" inputmode="tel" required placeholder="+51 999 999 999" /></label>
+          <label class="field"><span>Nombre o alias</span><input id="clientName" placeholder="Opcional" /></label>
+          <label class="field"><span>DNI / documento</span><input id="clientDocument" placeholder="Opcional" /></label>
+          <label class="field"><span>Evento consultado</span><select id="clientEventId"><option value="">Sin evento asignado</option></select></label>
+          <label class="field"><span>Etapa</span><select id="clientStage"><option value="new">Nuevo contacto</option><option value="info">Pidió información</option><option value="pending">Pendiente de pago</option><option value="paid">Pago confirmado</option><option value="delivered">Entrada entregada</option><option value="inactive">Inactivo</option></select></label>
+          <label class="field field-wide"><span>Etiquetas, separadas por coma</span><input id="clientTags" placeholder="VIP, referido, compra grupal..." /></label>
+          <label class="field field-wide"><span>Notas</span><textarea id="clientNotes" rows="3" placeholder="Preferencias, cantidad solicitada, acuerdos..."></textarea></label>
+          <label class="field field-wide"><span>Agregar actividad al historial</span><textarea id="clientInteraction" rows="2" placeholder="Ej. Consultó por 2 entradas VIP y pidió reservar hasta mañana"></textarea></label>
+        </div>
+
+        <section class="client-history">
+          <div class="panel-heading"><div><p class="eyebrow">Seguimiento</p><h3>Historial del cliente</h3></div></div>
+          <div id="clientHistoryList"></div>
+        </section>
+
+        <div class="quick-actions">
+          <button type="button" class="secondary-btn" id="clientWhatsAppBtn"><i data-lucide="message-circle"></i>Abrir WhatsApp</button>
+          <button type="button" class="danger-btn" id="deleteClientBtn"><i data-lucide="trash-2"></i>Eliminar cliente</button>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn" data-close-dialog="clientModal">Cancelar</button>
+          <button class="primary-btn" id="saveClientBtn"><i data-lucide="save"></i>Guardar cliente</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal modal-large" id="bulkSaleModal">
+      <form method="dialog" id="bulkSaleForm">
+        <div class="modal-header">
+          <div><p class="eyebrow">Venta multiple</p><h2>Registrar seleccionadas</h2></div>
+          <button type="button" class="icon-btn" data-close-dialog="bulkSaleModal" aria-label="Cerrar"><i data-lucide="x"></i></button>
+        </div>
+        <p class="bulk-sale-summary" id="bulkSaleSummary">0 entradas seleccionadas</p>
+        <div class="form-grid">
+          <label class="field"><span>Estado de entrada</span><select id="bulkTicketStatus"><option value="sold">Vendida</option><option value="reserved">Reservada</option><option value="delivered">Entregada</option></select></label>
+          <label class="field"><span>Estado del pago</span><select id="bulkPaymentStatus"><option value="paid">Pagado</option><option value="partial">Parcial</option><option value="pending">Pendiente</option></select></label>
+          <label class="field"><span>Nombre o alias (opcional)</span><input id="bulkBuyerName" placeholder="Ej. Ana, grupo de Carlos" /></label>
+          <label class="field"><span>WhatsApp del comprador</span><input id="bulkBuyerPhone" inputmode="tel" placeholder="+51 999 999 999" /></label>
+          <label class="field"><span>DNI / documento</span><input id="bulkBuyerDocument" placeholder="Opcional" /></label>
+          <label class="field"><span>Precio por entrada</span><input id="bulkSalePrice" type="number" min="0" step="0.01" placeholder="Vacio usa el precio base" /></label>
+          <label class="field"><span>Metodo de pago</span><select id="bulkPaymentMethod"><option value="">Sin registrar</option><option value="yape">Yape</option><option value="plin">Plin</option><option value="transfer">Transferencia</option><option value="cash">Efectivo</option><option value="card">Tarjeta</option></select></label>
+          <label class="field field-wide"><span>Notas internas</span><textarea id="bulkTicketNotes" rows="3" placeholder="Ej. Compro 5 entradas, falta enviar PDF, operación Yape..."></textarea></label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn" data-close-dialog="bulkSaleModal">Cancelar</button>
+          <button class="primary-btn" id="saveBulkSaleBtn" value="default"><i data-lucide="save"></i>Registrar venta</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="modal" id="confirmModal">
+      <div class="modal-header">
+        <div><p class="eyebrow">Confirmación</p><h2 id="confirmTitle">¿Continuar?</h2></div>
+      </div>
+      <p class="confirm-copy" id="confirmCopy"></p>
+      <div class="modal-actions">
+        <button class="secondary-btn" id="confirmCancelBtn">Cancelar</button>
+        <button class="danger-btn" id="confirmAcceptBtn">Confirmar</button>
+      </div>
+    </dialog>
+
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+      <script src="startup-loader.js?v=2026082903"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

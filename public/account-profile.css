@@ -1,0 +1,1 @@
+.account-identity-card{margin-bottom:14px}.account-form{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;margin-top:16px}.account-form .btn{min-height:43px}.account-form small{display:block;color:var(--orange);line-height:1.4;margin-top:5px}@media(max-width:720px){.account-form{grid-template-columns:1fr}}

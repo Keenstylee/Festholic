@@ -1,0 +1,13 @@
+ADMIN_TOKEN=replace-with-a-long-random-secret
+WHATSAPP_VERIFY_TOKEN=replace-with-a-random-verification-token
+WHATSAPP_APP_SECRET=copy-from-your-meta-app-settings
+RESEND_API_KEY=replace-with-your-resend-api-key
+EMAIL_FROM=MyFest <acceso@your-verified-domain.com>
+SESSION_SECRET=replace-with-at-least-32-random-characters
+DEV_BYPASS_AUTH=false
+
+GOOGLE_CLIENT_ID=your-google-oauth-web-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
+GOOGLE_REDIRECT_URI=http://127.0.0.1:8787/api/auth/google/callback
+QR_RECONSTRUCTOR_URL=https://your-cloud-run-service.run.app
+QR_RECONSTRUCTOR_TOKEN=replace-with-a-long-random-service-token

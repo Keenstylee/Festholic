@@ -1,0 +1,101 @@
+﻿<!doctype html>
+<html lang="es" class="auth-pending">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#09070f">
+  <meta name="description" content="Digitaliza códigos QR y genera entradas desde el panel de promotores de Festholic.">
+  <title>Digitalizador de entradas | Festholic</title>
+  <style>html.auth-pending body{visibility:hidden}</style>
+  <script src="auth-guard.js?v=2026091201"></script>
+  <link rel="icon" type="image/jpeg" href="img/logo/iconoweb.jpg?v=2026091201">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2026091201">
+  <link rel="stylesheet" href="styles.css?v=20260913221616">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+  <style>
+    body.generator-page{min-height:100vh;background:#09070f}.generator-page .nav-item{text-decoration:none}.generator-page .main{display:flex;min-height:100vh;flex-direction:column}.generator-page .content{width:min(100%,1560px);flex:1}.generator-page .topbar-back,.generator-page .user-avatar{color:#fff;text-decoration:none}.generator-intro{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:24px;margin-bottom:22px}.generator-intro h2{margin:7px 0 0;font:700 clamp(29px,4vw,46px)/1.04 "Space Grotesk","Manrope",sans-serif;letter-spacing:-.045em}.generator-intro p:not(.eyebrow){max-width:760px;margin:12px 0 0;color:var(--muted);font-size:14px;line-height:1.65}.generator-status{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid rgba(81,217,138,.26);border-radius:999px;color:#8ff0b8;background:rgba(81,217,138,.08);font-size:11px;font-weight:850;white-space:nowrap}.generator-status svg{width:16px}.generator-card{position:relative;overflow:hidden;min-height:780px;border:1px solid var(--line);border-radius:16px;background:rgba(20,16,31,.82);box-shadow:0 24px 70px rgba(0,0,0,.24)}.generator-card::before{content:"";position:absolute;z-index:2;inset:0 0 auto;height:3px;background:linear-gradient(135deg,#9b5cff,#ff3d9a)}.frame-loader{position:absolute;z-index:3;inset:3px 0 0;display:grid;place-content:center;justify-items:center;gap:12px;color:var(--muted);background:#0b0e12;transition:opacity 180ms ease,visibility 180ms ease}.frame-loader.is-hidden{opacity:0;visibility:hidden;pointer-events:none}.frame-loader svg{width:30px;height:30px;color:#ff3d9a;animation:generator-spin 900ms linear infinite}.frame-loader strong{color:#fff;font-size:14px}.generator-frame{display:block;width:100%;min-height:780px;height:calc(100dvh - 180px);border:0;background:#0e1117}.frame-fallback{margin:14px 2px 0;color:var(--muted);font-size:11px;text-align:center}.frame-fallback a{color:#38d9ff;font-weight:800;text-decoration:none}.generator-page .app-footer__nav a{padding:9px 11px;border-radius:10px;color:#aaa2b5;font-size:10px;font-weight:850;text-decoration:none;transition:color .18s ease,background .18s ease}.generator-page .app-footer__nav a:hover{color:#fff;background:rgba(255,255,255,.06)}@keyframes generator-spin{to{transform:rotate(360deg)}}
+    @media(max-width:760px){.generator-intro{grid-template-columns:1fr;gap:13px}.generator-intro h2{font-size:30px}.generator-card{min-height:900px;border-radius:14px}.generator-frame{min-height:900px;height:calc(100dvh - 120px)}.generator-page .app-footer__nav a{padding:7px 8px}}
+    .streamlit-help{display:flex;align-items:center;gap:11px;margin:0 0 14px;padding:11px 13px;border:1px solid rgba(255,216,77,.2);border-radius:12px;color:#d8d1df;background:rgba(255,216,77,.055);font-size:11px;line-height:1.45}.streamlit-help>svg{width:18px;flex:0 0 auto;color:#ffd84d}.streamlit-help span{min-width:0;flex:1}.streamlit-help strong{color:#fff}.streamlit-help a,.streamlit-help button{min-height:34px;display:inline-flex;align-items:center;justify-content:center;padding:0 11px;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#fff;background:rgba(255,255,255,.06);font:800 10px "Manrope",sans-serif;text-decoration:none;cursor:pointer}.streamlit-help a:hover,.streamlit-help button:hover{background:rgba(255,255,255,.11)}
+    @media(max-width:760px){.streamlit-help{align-items:flex-start;flex-wrap:wrap}.streamlit-help span{flex-basis:calc(100% - 32px)}.streamlit-help a,.streamlit-help button{flex:1}}
+  </style>
+</head>
+<body class="generator-page" data-current-view="generator-pdf">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><img class="brand-logo" src="img/logo/festholic.png" alt="Festholic"></div>
+      <div class="promoter-mode"><i data-lucide="briefcase-business"></i><span>Panel de promotores</span></div>
+      <nav class="nav-list" aria-label="Principal">
+        <a class="nav-item" href="/?view=dashboard"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+        <a class="nav-item" href="/?view=events"><i data-lucide="calendar-days"></i><span>Eventos</span></a>
+        <a class="nav-item" href="/?view=inventory"><i data-lucide="ticket-check"></i><span>Entradas</span></a>
+        <a class="nav-item" href="/?view=clients"><i data-lucide="contact-round"></i><span>Clientes</span></a>
+        <a class="nav-item" href="/?view=messages"><i data-lucide="messages-square"></i><span>Mensajes</span></a>
+        <a class="nav-item" href="/?view=generator"><i data-lucide="sparkles"></i><span>Generador de entradas</span><small class="plus-badge">PLUS</small></a>
+        <a class="nav-item active" href="/generador-pdf.html" aria-current="page"><i data-lucide="scan-line"></i><span>Digitalizador de entradas</span></a>
+        <a class="nav-item" href="/?view=feedback"><i data-lucide="message-square-more"></i><span>Enviar feedback</span></a>
+        <a class="nav-item" href="/?view=profile"><i data-lucide="user-round"></i><span>Mi perfil</span></a>
+        <a class="nav-item" id="adminNavLink" href="/admin.html" hidden><i data-lucide="shield-check"></i><span>Administrar usuarios</span></a>
+        <a class="nav-item" href="/?view=trash"><i data-lucide="trash-2"></i><span>Papelera</span></a>
+        <a class="nav-item" href="/legal.html"><i data-lucide="scale"></i><span>Legal y soporte</span></a>
+        <a class="nav-item" href="/security.html"><i data-lucide="lock-keyhole"></i><span>Seguridad de cuenta</span></a>
+        <a class="nav-item experience-switch" href="/experiencia"><i data-lucide="repeat-2"></i><span>Cambiar experiencia</span></a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="storage-note"><i data-lucide="cloud-check"></i><div><strong>Sincronización activa</strong><span>Sesión protegida de Festholic</span></div></div>
+        <button class="logout-button" id="logoutBtn" type="button"><i data-lucide="log-out"></i><span>Cerrar sesión</span></button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="menuBtn" aria-label="Abrir menú" title="Abrir menú"><i data-lucide="menu"></i></button>
+        <a class="icon-btn topbar-back" href="/?view=generator" aria-label="Volver al panel" title="Volver al panel"><i data-lucide="arrow-left"></i></a>
+        <div class="topbar-title"><p>Herramientas</p><h1>Digitalizador de entradas</h1></div>
+        <div class="topbar-actions"><a class="user-avatar" id="userAvatar" href="/?view=profile" title="Abrir mi perfil" aria-label="Abrir mi perfil"><span id="userAvatarInitials">FH</span></a></div>
+      </header>
+
+      <div class="content">
+        <section class="generator-intro" aria-labelledby="generatorTitle">
+          <div><p class="eyebrow">Herramienta integrada</p><h2 id="generatorTitle">Digitalizador de entradas</h2><p>Sube una entrada, reconstruye su código QR y actualiza los datos del evento sin salir del panel de promotores.</p></div>
+          <div class="generator-status"><i data-lucide="check-circle"></i>Herramienta disponible</div>
+        </section>
+        <div class="streamlit-help"><i data-lucide="moon-star"></i><span><strong>¿Aparece “Zzzz”?</strong> Community Cloud puede suspender la herramienta por inactividad. Reactívala y luego vuelve a cargarla aquí.</span><a id="wakeToolBtn" href="https://festholic-generador-entradas.streamlit.app" target="_blank" rel="noopener noreferrer">Reactivar herramienta</a><button id="reloadToolBtn" type="button">Volver a cargar</button></div>
+        <section class="generator-card" aria-label="Digitalizador de entradas">
+          <div class="frame-loader" id="frameLoader" role="status" aria-live="polite"><i data-lucide="loader-circle"></i><strong>Cargando el digitalizador…</strong><span>Esto puede tardar unos segundos.</span></div>
+          <iframe id="generatorFrame" class="generator-frame" src="https://festholic-generador-entradas.streamlit.app/?embed=true&embed_options=dark_theme" title="Digitalizador de entradas de Festholic" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+        </section>
+        <p class="frame-fallback">Si la herramienta no carga, <a href="https://festholic-generador-entradas.streamlit.app" target="_blank" rel="noopener noreferrer">ábrela en una pestaña nueva</a>.</p>
+      </div>
+
+      <footer class="app-footer">
+        <div class="app-footer__brand"><img class="app-footer__logo" src="img/logo/festholic.png" alt="Festholic"><div><strong>Festholic</strong><span>Tu operación de eventos, en un solo lugar.</span></div></div>
+        <div class="app-footer__links"><nav class="app-footer__nav" aria-label="Enlaces del producto"><a href="/?view=dashboard">Resumen</a><a href="/?view=events">Eventos</a><a href="/?view=feedback">Soporte</a></nav><nav class="app-footer__nav app-footer__legal" aria-label="Enlaces legales"><a href="/legal.html">Privacidad</a><a href="/legal.html">Términos</a><a href="/security.html">Seguridad</a></nav></div>
+        <div class="app-footer__meta"><span class="app-footer__status"><i aria-hidden="true"></i>Espacio protegido</span><small>© 2026 Festholic</small></div>
+      </footer>
+    </main>
+  </div>
+  <div class="drawer-backdrop" id="sidebarBackdrop"></div>
+
+  <script>
+    const sidebar=document.getElementById("sidebar"),backdrop=document.getElementById("sidebarBackdrop");
+    const closeMenu=()=>{document.body.classList.remove("menu-open");sidebar?.classList.remove("open");backdrop?.classList.remove("open")};
+    const openMenu=()=>{document.body.classList.add("menu-open");sidebar?.classList.add("open");backdrop?.classList.add("open")};
+    window.addEventListener("DOMContentLoaded",async()=>{
+      if(window.lucide)window.lucide.createIcons();
+      document.getElementById("menuBtn")?.addEventListener("click",()=>sidebar?.classList.contains("open")?closeMenu():openMenu());
+      backdrop?.addEventListener("click",closeMenu);sidebar?.querySelectorAll("a").forEach(link=>link.addEventListener("click",closeMenu));
+      document.addEventListener("keydown",event=>{if(event.key==="Escape")closeMenu()});
+      document.getElementById("generatorFrame")?.addEventListener("load",()=>document.getElementById("frameLoader")?.classList.add("is-hidden"),{once:true});
+      document.getElementById("reloadToolBtn")?.addEventListener("click",()=>{const frame=document.getElementById("generatorFrame"),loader=document.getElementById("frameLoader");loader?.classList.remove("is-hidden");if(frame)frame.src=`https://festholic-generador-entradas.streamlit.app/?embed=true&embed_options=dark_theme&reload=${Date.now()}`});
+      try{
+        const response=await fetch("/api/auth/session",{credentials:"include",cache:"no-store"}),result=await response.json(),user=result.user||{},identity=user.name||user.email||"Festholic";
+        const initials=identity.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase()||"FH",avatar=document.getElementById("userAvatar");
+        document.getElementById("userAvatarInitials").textContent=user.avatarUrl?"":initials;
+        if(user.avatarUrl){avatar.style.backgroundImage=`url("${user.avatarUrl}")`;avatar.style.backgroundSize="cover";avatar.style.backgroundPosition="center"}
+        avatar.title=user.name||user.email||"Usuario activo";document.getElementById("adminNavLink").hidden=user.role!=="owner";
+      }catch(_){}
+    });
+    document.getElementById("logoutBtn")?.addEventListener("click",async event=>{const button=event.currentTarget;button.disabled=true;button.innerHTML='<i data-lucide="loader-circle"></i><span>Cerrando...</span>';if(window.lucide)window.lucide.createIcons();await fetch("/api/auth/logout",{method:"POST",credentials:"include"}).catch(()=>{});location.replace("/login.html")});
+  </script>
+</body>
+</html>

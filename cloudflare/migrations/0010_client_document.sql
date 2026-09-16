@@ -1,0 +1,2 @@
+ALTER TABLE clients ADD COLUMN document TEXT NOT NULL DEFAULT '';
+

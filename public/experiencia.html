@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070711" />
+    <meta name="description" content="Elige tu experiencia en Festholic: asistente, promotor o media partner." />
+    <title>Festholic | Elige tu experiencia</title>
+    <link rel="icon" type="image/jpeg" href="img/logo/iconoweb.jpg?v=2026083001" />
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=20260614-1" />
+    <style>html.auth-pending body{visibility:hidden}</style>
+    <script>document.documentElement.classList.add("auth-pending")</script>
+    <script src="auth-guard.js?v=20260827-1"></script>
+    <link rel="stylesheet" href="styles.css?v=20260903-experience" />
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+    <script>
+      window.addEventListener("DOMContentLoaded", () => window.lucide?.createIcons?.());
+    </script>
+    <script src="experiencia.js?v=20260901-1" defer></script>
+    <script src="cookie-consent.js?v=2026083001" defer></script>
+  </head>
+  <body class="experience-choice-body">
+    <main class="experience-choice" aria-label="Elegir experiencia">
+      <section class="experience-choice__panel">
+        <img class="experience-choice__full-logo" src="img/logo/festholic.png" alt="Festholic" />
+
+        <div class="experience-choice__brand">
+          <small>El espacio para tus eventos</small>
+        </div>
+
+        <div class="experience-choice__intro">
+          <h1>Elige tu experiencia</h1>
+          <p>Elige cómo quieres vivir la experiencia Festholic. Esta elección no es permanente: puedes cambiar de espacio cuando quieras.</p>
+        </div>
+
+        <nav class="choice-option-list" aria-label="Opciones de experiencia">
+          <a class="choice-option" href="/fan.html" data-experience="attendee" aria-label="Entrar como asistente">
+            <span class="choice-option__icon"><i data-lucide="sparkles"></i></span>
+            <span class="choice-option__text">
+              <strong>Asistente</strong>
+              <small>Mis eventos y entradas guardadas.</small>
+            </span>
+            <i class="choice-option__arrow" data-lucide="arrow-right"></i>
+          </a>
+
+          <a class="choice-option" href="/index.html" data-experience="promoter" aria-label="Entrar como promotor">
+            <span class="choice-option__icon"><i data-lucide="ticket-check"></i></span>
+            <span class="choice-option__text">
+              <strong>Promotor</strong>
+              <small>Ventas e inventario.</small>
+            </span>
+            <i class="choice-option__arrow" data-lucide="arrow-right"></i>
+          </a>
+
+          <a class="choice-option" href="/media.html" data-experience="media" aria-label="Entrar como media partner">
+            <span class="choice-option__icon"><i data-lucide="megaphone"></i></span>
+            <span class="choice-option__text">
+              <strong>Media</strong>
+              <small>Contenido y campañas.</small>
+            </span>
+            <i class="choice-option__arrow" data-lucide="arrow-right"></i>
+          </a>
+        </nav>
+        <p class="form-help experience-choice__note">Podrás volver a esta pantalla desde el menú «Cambiar experiencia» de tu cuenta.</p>
+      </section>
+    </main>
+  </body>
+</html>
+
+
+
+
+

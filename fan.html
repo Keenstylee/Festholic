@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#7c3aed" />
+    <meta name="description" content="Tus próximos conciertos, countdowns y entradas en un solo lugar." />
+    <title>I Am Promote | Mis Eventos</title>
+    <link rel="manifest" href="fan.webmanifest?v=20260616-2" crossorigin="use-credentials" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="stylesheet" href="fan.css?v=2026082906" />
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+    <script src="fan.js?v=20260616-3" defer></script>
+      <link rel="stylesheet" href="startup-loader.css?v=2026082901" />
+  </head>
+  <body>
+    <div class="startup-loader" id="startupLoader" data-auto-hide="true" role="status" aria-live="polite">
+      <div class="startup-loader__brand">
+        <img class="startup-loader__logo" src="img/logo/festholic.png" alt="Festholic" />
+        <small>Workspace de eventos</small>
+      </div>
+      <div class="startup-loader__panel">
+        <div class="startup-loader__visual" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="startup-loader__copy">
+          <small>Sincronización segura</small>
+          <p>Preparando tu experiencia</p>
+          <span>Organizando eventos, contenido y herramientas.</span>
+        </div>
+        <div class="startup-loader__track" aria-hidden="true"><span></span></div>
+        <div class="startup-loader__steps" aria-hidden="true"><span><i></i>Eventos</span><span><i></i>Contenido</span><span><i></i>Gestión</span></div>
+      </div>
+    </div>
+    <div class="aurora aurora-one"></div>
+    <div class="aurora aurora-two"></div>
+
+    <div class="fan-app">
+      <aside class="fan-sidebar" id="fanSidebar">
+        <a class="fan-brand" href="fan.html" aria-label="I Am Promote Asistentes">
+          <span class="brand-pulse" id="profileInitial">IP</span>
+          <span><strong id="profileNameLabel">I Am Promote</strong><small id="profileMetaLabel">Ticket workspace</small></span>
+        </a>
+
+        <div class="panel-switcher" aria-label="Cambiar panel">
+          <a href="index.html"><i data-lucide="briefcase-business"></i>Promotores</a>
+          <a href="fan.html"><i data-lucide="party-popper"></i>Asistentes</a>
+        </div>
+
+        <nav class="fan-nav" aria-label="Panel de asistentes">
+          <a class="active" href="#eventsSection"><i data-lucide="calendar-heart"></i><span>Mis eventos</span></a>
+          <a href="#prepSection"><i data-lucide="badge-check"></i><span>Checklist</span></a>
+          <button id="ticketQuickBtn" type="button"><i data-lucide="ticket"></i><span>Guardar entrada</span></button>
+          <button id="profileBtn" type="button"><i data-lucide="user-round"></i><span>Mi perfil</span></button>
+        </nav>
+
+        <div class="sidebar-card profile-card" id="profileCard">
+          <i data-lucide="sparkles"></i>
+          <strong id="profileCardTitle">Tu perfil asistente</strong>
+          <span id="profileCardCopy">Personaliza tu panel para tus conciertos.</span>
+        </div>
+      </aside>
+
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+      <div class="fan-main">
+        <header class="fan-topbar">
+          <button class="icon-button menu-toggle" id="menuBtn" type="button" aria-label="Abrir menú"><i data-lucide="menu"></i></button>
+          <div class="topbar-title">
+            <p class="kicker">Countdown personal</p>
+            <h1>Mis eventos</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="round-button" id="installBtn" type="button" hidden title="Instalar aplicación">
+              <i data-lucide="download"></i><span>Instalar</span>
+            </button>
+            <button class="primary-button" id="newEventBtn" type="button"><i data-lucide="plus"></i> Nuevo evento</button>
+          </div>
+        </header>
+
+        <main class="dashboard-content">
+          <section class="fan-summary">
+            <article class="summary-card summary-main">
+              <span class="summary-icon"><i data-lucide="party-popper"></i></span>
+              <div>
+                <p>Próximo show</p>
+                <h2 id="nextEventName">Sin eventos</h2>
+                <span id="nextEventTime">Agrega tu primer concierto</span>
+              </div>
+            </article>
+            <article class="summary-card">
+              <p>Eventos guardados</p>
+              <strong id="eventCount">0</strong>
+              <span>en tu countdown</span>
+            </article>
+            <article class="summary-card">
+              <p>Entradas</p>
+              <strong id="ticketCount">0</strong>
+              <span>listas para abrir</span>
+            </article>
+          </section>
+
+          <section class="section-block" id="eventsSection">
+            <div class="section-heading">
+              <div><h2>Mis eventos</h2></div>
+              <button class="text-button" id="addEventTopBtn" type="button">Añadir otro<i data-lucide="arrow-up-right"></i></button>
+            </div>
+            <div class="event-grid" id="eventGrid"></div>
+            <div class="empty-state" id="emptyState" hidden>
+              <i data-lucide="calendar-plus"></i>
+              <h3>Tu agenda espera su primer show</h3>
+              <p>Agrega un evento, mira cuánto falta y guarda tu entrada cuando la tengas.</p>
+              <button class="primary-button" data-add-event type="button">Agregar evento</button>
+            </div>
+          </section>
+
+          <section class="prep-section" id="prepSection">
+            <div class="section-heading">
+              <div><p class="kicker">Checklist festivalero</p><h2>Antes de salir</h2></div>
+              <span class="prep-score" id="prepScore">0/4 listo</span>
+            </div>
+            <div class="prep-grid" id="prepGrid">
+              <button class="prep-card" data-prep="dni" type="button"><span class="prep-icon coral"><i data-lucide="contact"></i></span><span><strong>Lleva tu DNI</strong><small>Revisa que esté en tu bolsillo.</small></span><i class="check" data-lucide="circle"></i></button>
+              <button class="prep-card" data-prep="storage" type="button"><span class="prep-icon cyan"><i data-lucide="hard-drive"></i></span><span><strong>Libera almacenamiento</strong><small>Haz espacio para todos los videos.</small></span><i class="check" data-lucide="circle"></i></button>
+              <button class="prep-card" data-prep="battery" type="button"><span class="prep-icon yellow"><i data-lucide="battery-charging"></i></span><span><strong>Carga el celular</strong><small>Idealmente al 100% y con batería externa.</small></span><i class="check" data-lucide="circle"></i></button>
+              <button class="prep-card" data-prep="fun" type="button"><span class="prep-icon violet"><i data-lucide="music-2"></i></span><span><strong>¡A divertirse!</strong><small>Lo demás puede esperar.</small></span><i class="check" data-lucide="circle"></i></button>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <dialog class="fan-modal" id="eventModal">
+      <form id="eventForm">
+        <div class="modal-heading">
+          <div><p class="kicker">Tu agenda</p><h2 id="modalTitle">Nuevo evento</h2></div>
+          <button class="icon-button" data-close-modal type="button" aria-label="Cerrar"><i data-lucide="x"></i></button>
+        </div>
+        <input id="eventId" type="hidden" />
+        <div class="form-grid">
+          <label><span>Artista o evento</span><input id="eventName" required placeholder="Ej. Maná" /></label>
+          <label><span>Lugar</span><input id="eventVenue" required placeholder="Ej. Estadio Nacional" /></label>
+          <label><span>Fecha y hora</span><input id="eventDate" required type="datetime-local" /></label>
+          <label><span>Color</span><select id="eventTheme"><option value="violet">Violeta</option><option value="coral">Coral</option><option value="cyan">Cian</option><option value="yellow">Amarillo</option></select></label>
+          <label class="wide"><span>Fotografía</span><select id="eventImage"><option value="fan-mana.png">Maná</option><option value="fan-hugel.png">Hugel</option><option value="fan-cochinola.jpg">Cochinola</option></select></label>
+          <label class="wide"><span>Playlist de Spotify (opcional)</span><input id="eventSpotify" type="url" placeholder="https://open.spotify.com/playlist/..." /></label>
+          <label class="wide upload-field"><span>Entrada PDF o imagen</span><input id="eventTicket" type="file" accept="application/pdf,image/*" /><small id="ticketFileLabel">Puedes agregarla ahora o después.</small></label>
+        </div>
+        <div class="modal-actions">
+          <button class="danger-link" id="deleteEventBtn" type="button" hidden><i data-lucide="trash-2"></i> Eliminar</button>
+          <span></span>
+          <button class="glass-button" data-close-modal type="button">Cancelar</button>
+          <button class="primary-button" type="submit"><i data-lucide="save"></i> Guardar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="fan-modal" id="profileModal">
+      <form id="profileForm">
+        <div class="modal-heading">
+          <div><p class="kicker">Asistente</p><h2>Mi perfil</h2></div>
+          <button class="icon-button" data-close-profile type="button" aria-label="Cerrar"><i data-lucide="x"></i></button>
+        </div>
+        <div class="form-grid">
+          <label><span>Nombre o alias</span><input id="profileName" placeholder="Ej. Keen" /></label>
+          <label><span>Ciudad</span><input id="profileCity" placeholder="Ej. Lima" /></label>
+          <label class="wide"><span>Instagram / TikTok</span><input id="profileSocial" placeholder="@tuusuario" /></label>
+        </div>
+        <div class="modal-actions profile-actions">
+          <span></span>
+          <button class="glass-button" data-close-profile type="button">Cancelar</button>
+          <button class="primary-button" type="submit"><i data-lucide="save"></i> Guardar perfil</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <script src="startup-loader.js?v=2026082903"></script>
+  </body>
+</html>
+
+

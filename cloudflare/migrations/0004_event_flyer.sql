@@ -1,0 +1,4 @@
+ALTER TABLE events ADD COLUMN flyer_object_key TEXT;
+ALTER TABLE events ADD COLUMN flyer_file_name TEXT NOT NULL DEFAULT '';
+ALTER TABLE events ADD COLUMN flyer_file_type TEXT NOT NULL DEFAULT '';
+ALTER TABLE events ADD COLUMN flyer_file_size INTEGER NOT NULL DEFAULT 0;

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0712" />
+    <meta name="description" content="Acceso privado a Festholic." />
+    <title>Iniciar sesión | Festholic</title>
+    <link rel="icon" type="image/jpeg" href="img/logo/iconoweb.jpg?v=2026083001" />
+    <link rel="stylesheet" href="login.css?v=20260830-4" />
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+    <script src="login.js?v=20260830065405" defer></script>
+  </head>
+  <body>
+    <main class="login-shell">
+      <section class="brand-panel" aria-label="Festholic">
+        <div class="festival-lines" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="brand-lockup"><img class="brand-logo" src="img/logo/festholic.png" alt="Festholic" /></div>
+        <div class="brand-copy"><span>Control operativo</span><h1>Todo tu evento,<br />en orden.</h1><p>Entradas, clientes y entregas desde un solo lugar.</p></div>
+        <div class="brand-status"><i data-lucide="shield-check"></i><span><strong>Nube activa</strong><small>Sincronizado con Cloudflare</small></span></div>
+      </section>
+
+      <section class="form-panel">
+        <div class="mobile-brand"><img class="brand-logo" src="img/logo/festholic.png" alt="Festholic" /></div>
+        <div class="login-card">
+          <header><p class="eyebrow">Festholic</p><h2 id="authTitle">Inicia sesión</h2><span id="authSubtitle">Accede a tu espacio de trabajo.</span></header>
+          <div class="auth-tabs" role="tablist" aria-label="Acceso">
+            <button class="active" id="loginTab" type="button" role="tab" aria-selected="true">Ingresar</button>
+            <button id="registerTab" type="button" role="tab" aria-selected="false">Crear cuenta</button>
+          </div>
+          <form id="loginForm" novalidate>
+            <label for="email">Correo electronico</label>
+            <div class="field"><i data-lucide="mail"></i><input id="email" name="email" type="email" autocomplete="username" placeholder="tu@correo.com" required /></div>
+            <label for="password">Contraseña</label>
+            <div class="field"><i data-lucide="lock-keyhole"></i><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Tu contraseña" required /><button id="togglePassword" type="button" aria-label="Mostrar contraseña"><i data-lucide="eye"></i></button></div>
+            <div class="login-error" id="loginError" role="alert" hidden></div>
+            <button class="resend-button" id="resendButton" type="button" hidden>Reenviar correo de verificacion</button>
+            <button class="submit-button" id="submitButton" type="submit"><span>Ingresar</span><i data-lucide="arrow-right"></i></button>
+            <button class="text-button forgot-link" id="forgotPasswordButton" type="button">Olvide mi contraseña</button>
+          </form>
+          <form id="registerForm" novalidate hidden>
+            <label for="registerName">Nombre</label>
+            <div class="field"><i data-lucide="user-round"></i><input id="registerName" name="name" type="text" autocomplete="name" placeholder="Tu nombre" minlength="2" maxlength="80" required /></div>
+            <label for="registerEmail">Correo electronico</label>
+            <div class="field"><i data-lucide="mail"></i><input id="registerEmail" name="email" type="email" autocomplete="email" placeholder="tu@correo.com" required /></div>
+            <label>¿Como quieres empezar en Festholic?</label>
+            <p class="form-help">Elige una experiencia para comenzar. Es una preferencia inicial y puedes cambiarla cuando quieras desde «Cambiar experiencia».</p>
+            <div class="experience-picker" role="radiogroup" aria-label="Tipo de experiencia">
+              <label><input type="radio" name="experience" value="attendee" checked /><span><i data-lucide="ticket"></i><b>Asistente</b></span></label>
+              <label><input type="radio" name="experience" value="promoter" /><span><i data-lucide="briefcase-business"></i><b>Promotor</b></span></label>
+              <label><input type="radio" name="experience" value="media" /><span><i data-lucide="megaphone"></i><b>Media</b></span></label>
+            </div>
+            <label for="registerPassword">Contraseña</label>
+            <div class="field"><i data-lucide="lock-keyhole"></i><input id="registerPassword" name="password" type="password" autocomplete="new-password" placeholder="Minimo 10 caracteres" minlength="10" maxlength="128" required /><button class="password-toggle" type="button" data-password-target="registerPassword" aria-label="Mostrar contraseña"><i data-lucide="eye"></i></button></div>
+            <label for="registerConfirm">Confirmar contraseña</label>
+            <div class="field"><i data-lucide="shield-check"></i><input id="registerConfirm" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Repite tu contraseña" minlength="10" maxlength="128" required /></div>
+            <div class="login-error" id="registerError" role="alert" hidden></div>
+            <button class="submit-button" id="registerButton" type="submit"><span>Crear cuenta</span><i data-lucide="arrow-right"></i></button>
+          </form>
+          <form id="forgotForm" novalidate hidden>
+            <p class="form-help">Ingresa tu correo y te enviaremos un enlace seguro para crear una nueva contraseña.</p>
+            <label for="forgotEmail">Correo electronico</label>
+            <div class="field"><i data-lucide="mail"></i><input id="forgotEmail" type="email" autocomplete="email" placeholder="tu@correo.com" required /></div>
+            <div class="login-error" id="forgotError" role="alert" hidden></div>
+            <div class="auth-notice" id="forgotSuccess" hidden></div>
+            <button class="submit-button" id="forgotSubmit" type="submit"><span>Enviar enlace</span><i data-lucide="send"></i></button>
+            <button class="text-button" data-back-login type="button">Volver al inicio de sesión</button>
+          </form>
+          <form id="resetForm" novalidate hidden>
+            <p class="form-help">Crea una contraseña nueva de al menos 10 caracteres.</p>
+            <label for="resetPassword">Nueva contraseña</label>
+            <div class="field"><i data-lucide="lock-keyhole"></i><input id="resetPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required /></div>
+            <label for="resetConfirm">Confirmar contraseña</label>
+            <div class="field"><i data-lucide="shield-check"></i><input id="resetConfirm" type="password" autocomplete="new-password" minlength="10" maxlength="128" required /></div>
+            <div class="login-error" id="resetError" role="alert" hidden></div>
+            <div class="auth-notice" id="resetSuccess" hidden></div>
+            <button class="submit-button" id="resetSubmit" type="submit"><span>Guardar contraseña</span><i data-lucide="check"></i></button>
+            <button class="text-button" data-back-login type="button">Volver al inicio de sesión</button>
+          </form>
+          <section class="social-auth" id="socialAuth">
+            <div class="auth-divider"><span>o continúa con</span></div>
+            <button class="google-button" id="googleLoginButton" type="button">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z"/><path fill="#34A853" d="M12 22c2.7 0 4.97-.9 6.62-2.36l-3.24-2.54c-.9.6-2.05.96-3.38.96-2.61 0-4.82-1.76-5.61-4.13H3.04v2.62A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.39 13.93A6 6 0 0 1 6.07 12c0-.67.12-1.32.32-1.93V7.45H3.04A10 10 0 0 0 2 12c0 1.64.39 3.19 1.04 4.55l3.35-2.62Z"/><path fill="#EA4335" d="M12 5.94c1.47 0 2.79.5 3.83 1.5l2.87-2.88A9.64 9.64 0 0 0 12 2a10 10 0 0 0-8.96 5.45l3.35 2.62C7.18 7.7 9.39 5.94 12 5.94Z"/></svg>
+              <span>Continuar con Google</span>
+            </button>
+          </section>
+          <section class="verification-state" id="verificationState" hidden>
+            <span class="verification-icon"><i data-lucide="mail-check"></i></span>
+            <h3>Revisa tu correo</h3>
+            <p>Enviamos un enlace de verificacion a <strong id="verificationEmail"></strong>.</p>
+            <p class="verification-help">Abre el enlace para activar tu cuenta. Tambien revisa la carpeta de spam.</p>
+            <button class="resend-button" id="verificationResendButton" type="button">Reenviar correo</button>
+            <button class="text-button" id="backToLoginButton" type="button">Volver al inicio de sesión</button>
+          </section>
+          <p class="security-note"><i data-lucide="shield-check"></i>Sesión privada y protegida</p>
+        </div>
+      </section>
+    </main>
+    <script src="cookie-consent.js?v=2026083001" defer></script>
+  </body>
+</html>
+

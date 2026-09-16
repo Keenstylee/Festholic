@@ -1,0 +1,17 @@
+{
+    "name":  "iampromote",
+    "version":  "0.1.0",
+    "private":  true,
+    "scripts":  {
+                    "dev:api":  "wrangler dev --config cloudflare/wrangler.toml",
+                    "dev:cloud":  "wrangler dev --name iampromote-dev --port 8787 --var DEV_BYPASS_AUTH:true --config cloudflare/wrangler.toml",
+                    "deploy:api":  "wrangler deploy --config cloudflare/wrangler.toml",
+                    "db:migrate:local":  "wrangler d1 migrations apply iampromote_db --local --config cloudflare/wrangler.toml",
+                    "db:migrate:remote":  "wrangler d1 migrations apply iampromote_db --remote --config cloudflare/wrangler.toml",
+                    "version:assets":  "powershell -ExecutionPolicy Bypass -File scripts/version-assets.ps1",
+                    "deploy":  "npm run version:assets \u0026\u0026 wrangler deploy --config cloudflare/wrangler.toml"
+                },
+    "devDependencies":  {
+                            "wrangler":  "^4.100.0"
+                        }
+}
