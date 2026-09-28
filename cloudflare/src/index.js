@@ -115,6 +115,10 @@ export default {
         : json({ authenticated: false }, 401, cors);
     }
 
+    if (url.pathname === "/api/digitalizer/generation" && request.method === "POST") {
+      return handleDigitalizerGeneration(request, env, cors);
+    }
+
     const auth = await getAuthContext(request, env);
     if (!auth) {
       return json({ error: "No autorizado" }, 401, cors);
@@ -131,10 +135,56 @@ export default {
   },
 };
 
+async function handleDigitalizerGeneration(request, env, cors) {
+  if (!env.SESSION_SECRET) return json({ error: "Seguimiento no configurado" }, 503, cors);
+  try {
+    const body = await readJson(request);
+    const token = String(body.token || "");
+    const eventId = String(body.eventId || "").trim();
+    const mode = String(body.mode || "");
+    const entryCount = Number(body.entryCount);
+    if (!/^[0-9a-f-]{36}$/i.test(eventId)) return json({ error: "Identificador de descarga no valido" }, 400, cors);
+    if (!Number.isInteger(entryCount) || entryCount < 1 || entryCount > 20) return json({ error: "Cantidad de entradas no valida" }, 400, cors);
+    if (!new Set(["single", "batch"]).has(mode)) return json({ error: "Modo de descarga no valido" }, 400, cors);
+
+    const claim = await verifyDigitalizerToken(token, env.SESSION_SECRET);
+    if (!claim) return json({ error: "Token de seguimiento no valido o vencido" }, 401, cors);
+    const user = await env.DB.prepare(
+      "SELECT id, status, session_version FROM users WHERE id = ?"
+    ).bind(claim.userId).first();
+    if (!user || user.status !== "active" || Number(user.session_version || 1) !== Number(claim.version || 1)) {
+      return json({ error: "Usuario no autorizado" }, 401, cors);
+    }
+
+    const result = await env.DB.prepare(
+      `INSERT OR IGNORE INTO digitalizer_generations
+       (id, user_id, entry_count, mode, created_at) VALUES (?, ?, ?, ?, ?)`
+    ).bind(eventId, claim.userId, entryCount, mode, Date.now()).run();
+    const usage = await env.DB.prepare(
+      "SELECT COALESCE(SUM(entry_count), 0) AS total FROM digitalizer_generations WHERE user_id = ?"
+    ).bind(claim.userId).first();
+    return json({ ok: true, recorded: Number(result.meta?.changes || 0) > 0, generatedCount: Number(usage?.total || 0) }, 200, cors);
+  } catch (error) {
+    console.error(JSON.stringify({ message: "digitalizer_generation_failed", error: String(error) }));
+    return json({ error: "No se pudo registrar la generación" }, 400, cors);
+  }
+}
+
 async function route(request, env, url, auth) {
   const { method } = request;
   const path = url.pathname;
   const ownerId = auth.userId;
+
+  if (method === "GET" && path === "/api/digitalizer/token") {
+    if (!env.SESSION_SECRET) return json({ error: "El sistema de sesiones aun no esta configurado" }, 503);
+    const [token, usage] = await Promise.all([
+      createDigitalizerToken(auth, env.SESSION_SECRET),
+      env.DB.prepare(
+        "SELECT COALESCE(SUM(entry_count), 0) AS total FROM digitalizer_generations WHERE user_id = ?"
+      ).bind(ownerId).first(),
+    ]);
+    return json({ token, generatedCount: Number(usage?.total || 0) });
+  }
 
   if (method === "POST" && path === "/api/auth/change-password") {
     if (!env.SESSION_SECRET) return json({ error: "El sistema de sesiones aun no esta configurado" }, 503);
@@ -233,7 +283,7 @@ async function route(request, env, url, auth) {
     if (auth.role !== "owner") return json({ error: "Acceso exclusivo para administradores" }, 403);
 
     if (method === "GET" && path === "/api/admin/overview") {
-      const [users, active, support, deletion, promoters, events, tickets, sold, checkins] = await Promise.all([
+      const [users, active, support, deletion, promoters, events, tickets, sold, checkins, digitalized] = await Promise.all([
         env.DB.prepare("SELECT COUNT(*) AS total FROM users").first(),
         env.DB.prepare("SELECT COUNT(*) AS total FROM users WHERE status = 'active'").first(),
         env.DB.prepare("SELECT COUNT(*) AS total FROM support_requests WHERE status = 'open'").first(),
@@ -243,8 +293,9 @@ async function route(request, env, url, auth) {
         env.DB.prepare("SELECT COUNT(*) AS total FROM tickets WHERE deleted_at IS NULL").first(),
         env.DB.prepare("SELECT COUNT(*) AS total FROM tickets WHERE status IN ('sold','delivered') AND deleted_at IS NULL").first(),
         env.DB.prepare("SELECT COUNT(*) AS total FROM tickets WHERE checked_in_at IS NOT NULL AND deleted_at IS NULL").first(),
+        env.DB.prepare("SELECT COALESCE(SUM(entry_count), 0) AS total FROM digitalizer_generations").first(),
       ]);
-      return json({ users: Number(users?.total || 0), active: Number(active?.total || 0), support: Number(support?.total || 0), deletion: Number(deletion?.total || 0), promoters: Number(promoters?.total || 0), events: Number(events?.total || 0), tickets: Number(tickets?.total || 0), sold: Number(sold?.total || 0), checkins: Number(checkins?.total || 0) });
+      return json({ users: Number(users?.total || 0), active: Number(active?.total || 0), support: Number(support?.total || 0), deletion: Number(deletion?.total || 0), promoters: Number(promoters?.total || 0), events: Number(events?.total || 0), tickets: Number(tickets?.total || 0), sold: Number(sold?.total || 0), checkins: Number(checkins?.total || 0), digitalized: Number(digitalized?.total || 0) });
     }
 
     if (method === "GET" && path === "/api/admin/users") {
@@ -255,6 +306,7 @@ async function route(request, env, url, auth) {
                 (SELECT COUNT(*) FROM events e WHERE e.owner_id = u.id AND e.deleted_at IS NULL) AS event_count,
                 (SELECT COUNT(*) FROM tickets t WHERE t.owner_id = u.id AND t.deleted_at IS NULL) AS ticket_count,
                 (SELECT COUNT(*) FROM clients c WHERE c.owner_id = u.id) AS client_count,
+                (SELECT COALESCE(SUM(g.entry_count), 0) FROM digitalizer_generations g WHERE g.user_id = u.id) AS digitalized_count,
                 (SELECT COUNT(*) FROM user_files f WHERE f.user_id = u.id)
                   + (SELECT COUNT(*) FROM tickets t WHERE t.owner_id = u.id AND t.object_key IS NOT NULL AND t.deleted_at IS NULL)
                   + (SELECT COUNT(*) FROM events e WHERE e.owner_id = u.id AND e.flyer_object_key IS NOT NULL AND e.deleted_at IS NULL) AS file_count,
@@ -1240,12 +1292,13 @@ function normalizeClient(input, current = {}) {
   const now = Date.now();
   const stage = input.stage || current.stage || "new";
   if (!CLIENT_STAGES.has(stage)) throw new Error("Etapa de cliente invalida");
-  const phone = String(input.phone || current.phone || "").replace(/[^\d+]/g, "").trim();
-  if (!phone) throw new Error("El WhatsApp del cliente es obligatorio");
+  const phone = String(input.phone ?? current.phone ?? "").replace(/[^\d+]/g, "").trim();
+  const name = String(input.name ?? current.name ?? "").trim();
+  if (!phone && !name) throw new Error("Ingresa el nombre o el WhatsApp del cliente");
   return {
     id: input.id || current.id || crypto.randomUUID(),
     phone,
-    name: String(input.name ?? current.name ?? "").trim(),
+    name,
     document: String(input.document ?? input.dni ?? input.buyerDocument ?? current.document ?? "").trim(),
     event_id: input.eventId ?? input.event_id ?? current.event_id ?? null,
     stage,
@@ -2047,6 +2100,21 @@ async function createSessionToken(auth, secret) {
     exp: Math.floor(Date.now() / 1000) + SESSION_MAX_AGE,
   })));
   return `${payload}.${await signSessionPayload(payload, secret)}`;
+}
+
+async function createDigitalizerToken(auth, secret) {
+  const payload = toBase64Url(new TextEncoder().encode(JSON.stringify({
+    userId: auth.userId,
+    version: Number(auth.sessionVersion || 1),
+    scope: "digitalizer-generation",
+    exp: Math.floor(Date.now() / 1000) + (60 * 60 * 12),
+  })));
+  return `${payload}.${await signSessionPayload(payload, secret)}`;
+}
+
+async function verifyDigitalizerToken(token, secret) {
+  const claim = await verifySessionToken(token, secret);
+  return claim?.scope === "digitalizer-generation" && claim.userId ? claim : null;
 }
 
 async function verifySessionToken(token, secret) {
