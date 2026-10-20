@@ -1,0 +1,27 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Sintaxis JavaScript
+        run: |
+          find . -name "*.js" -not -path "./node_modules/*" -not -name "*.bundle.js" -not -name "*.min.js" -print0 | while IFS= read -r -d '' f; do
+            cp "$f" /tmp/check.mjs
+            node --check /tmp/check.mjs || { echo "Error de sintaxis en $f"; exit 1; }
+          done
+      - name: Validar JSON y manifiestos
+        run: |
+          for f in package.json manifest.webmanifest fan.webmanifest; do
+            if [ -f "$f" ]; then node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))"; fi
+          done
+      - name: Buscar secretos
+        run: |
+          if git ls-files | grep -E '(^|/)\.dev\.vars$|(^|/)\.env$'; then echo "Archivo de secretos versionado"; exit 1; fi
