@@ -40,7 +40,7 @@ async function loadUsers() {
   const data = await api(`/api/admin/users?q=${encodeURIComponent($("#userSearch").value)}`);
   $("#userList").innerHTML = data.users.map((user) => `
     <article class="user-row" data-user="${esc(user.id)}">
-      <div><strong>${esc(user.name)}</strong><small>${esc(user.email)}</small><small class="user-resource-summary">${Number(user.event_count || 0)} eventos · ${Number(user.ticket_count || 0)} entradas · ${Number(user.client_count || 0)} clientes · ${Number(user.digitalizer_generated || 0)} digitalizadas · ${Number(user.file_count || 0)} archivos · ${formatBytes(user.storage_bytes)}</small></div>
+      <div><strong>${esc(user.name)}</strong><small>${esc(user.email)}</small><small class="user-resource-summary">${Number(user.event_count || 0)} eventos · ${Number(user.ticket_count || 0)} entradas · ${Number(user.client_count || 0)} clientes · ${Number(user.file_count || 0)} archivos · ${formatBytes(user.storage_bytes)}</small></div>
       <select data-field="experience"><option value="promoter" ${user.experience === "promoter" ? "selected" : ""}>Promotor</option><option value="attendee" ${user.experience === "attendee" ? "selected" : ""}>Asistente</option><option value="media" ${user.experience === "media" ? "selected" : ""}>Media partner</option></select>
       <select data-field="role"><option value="promoter" ${user.role === "promoter" ? "selected" : ""}>Usuario</option><option value="owner" ${user.role === "owner" ? "selected" : ""}>Administrador</option></select>
       <select data-field="status"><option value="active" ${user.status === "active" ? "selected" : ""}>Activo</option><option value="disabled" ${user.status === "disabled" ? "selected" : ""}>Bloqueado</option></select>

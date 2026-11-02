@@ -57,14 +57,14 @@
       <div class="content">
         <section class="generator-intro" aria-labelledby="generatorTitle">
           <div><p class="eyebrow">Herramienta integrada</p><h2 id="generatorTitle">Digitalizador de entradas</h2><p>Sube una entrada, reconstruye su código QR y actualiza los datos del evento sin salir del panel de promotores.</p></div>
-          <div class="generator-status" id="generatorAccessStatus"><i data-lucide="shield-check"></i>Verificando acceso</div>
+          <div class="generator-status"><i data-lucide="check-circle"></i>Herramienta disponible</div>
         </section>
-        <div class="streamlit-help"><i data-lucide="moon-star"></i><span><strong>Herramienta disponible.</strong> El digitalizador está abierto para todos los usuarios durante esta etapa.</span><a id="wakeToolBtn" href="#" target="_blank" rel="noopener noreferrer" hidden>Reactivar herramienta</a><button id="reloadToolBtn" type="button" hidden>Volver a cargar</button></div>
+        <div class="streamlit-help"><i data-lucide="moon-star"></i><span><strong>¿Aparece “Zzzz”?</strong> Community Cloud puede suspender la herramienta por inactividad. Reactívala y luego vuelve a cargarla aquí.</span><a id="wakeToolBtn" href="https://festholic-generador-entradas.streamlit.app" target="_blank" rel="noopener noreferrer">Reactivar herramienta</a><button id="reloadToolBtn" type="button">Volver a cargar</button></div>
         <section class="generator-card" aria-label="Digitalizador de entradas">
           <div class="frame-loader" id="frameLoader" role="status" aria-live="polite"><i data-lucide="loader-circle"></i><strong>Cargando el digitalizador…</strong><span>Esto puede tardar unos segundos.</span></div>
-          <iframe id="generatorFrame" class="generator-frame" src="about:blank" title="Digitalizador de entradas de Festholic" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
+          <iframe id="generatorFrame" class="generator-frame" src="https://festholic-generador-entradas.streamlit.app/?embed=true&embed_options=dark_theme" title="Digitalizador de entradas de Festholic" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
         </section>
-        <p class="frame-fallback" id="frameFallback">El acceso se valida con tu cuenta de Festholic.</p>
+        <p class="frame-fallback">Si la herramienta no carga, <a href="https://festholic-generador-entradas.streamlit.app" target="_blank" rel="noopener noreferrer">ábrela en una pestaña nueva</a>.</p>
       </div>
 
       <footer class="app-footer">
@@ -80,49 +80,19 @@
     const sidebar=document.getElementById("sidebar"),backdrop=document.getElementById("sidebarBackdrop");
     const closeMenu=()=>{document.body.classList.remove("menu-open");sidebar?.classList.remove("open");backdrop?.classList.remove("open")};
     const openMenu=()=>{document.body.classList.add("menu-open");sidebar?.classList.add("open");backdrop?.classList.add("open")};
-    const toolBaseUrl="https://festholic-generador-entradas.streamlit.app/";
-    let securedToolUrl="";
-    const loadSecuredTool=async()=>{
-      const status=document.getElementById("generatorAccessStatus"),loader=document.getElementById("frameLoader"),frame=document.getElementById("generatorFrame"),fallback=document.getElementById("frameFallback"),wake=document.getElementById("wakeToolBtn"),reload=document.getElementById("reloadToolBtn");
-      loader?.classList.remove("is-hidden");
-      const response=await fetch("/api/digitalizer/token",{credentials:"include",cache:"no-store"});
-      const result=await response.json().catch(()=>({}));
-      if(!response.ok||!result.token){
-        if(status)status.innerHTML='<i data-lucide="circle-alert"></i>No disponible temporalmente';
-        if(loader)loader.innerHTML='<i data-lucide="circle-alert"></i><strong>No se pudo abrir la herramienta</strong><span>Vuelve a intentarlo en unos segundos.</span>';
-        if(fallback)fallback.textContent="El digitalizador está abierto para todos los usuarios; vuelve a cargar la página.";
-        wake?.setAttribute("hidden","");reload?.setAttribute("hidden","");window.lucide?.createIcons();return;
-      }
-      const params=new URLSearchParams({embed:"true",embed_options:"dark_theme",festholic_token:result.token});
-      securedToolUrl=`${toolBaseUrl}?${params}`;
-      if(frame)frame.src=securedToolUrl;
-      if(wake)wake.hidden=false;if(reload)reload.hidden=false;
-      if(status)status.innerHTML='<i data-lucide="shield-check"></i>Acceso autorizado';
-      if(fallback)fallback.textContent=`Acceso activo para ${result.user?.email||"tu cuenta"}.`;
-      window.lucide?.createIcons();
-    };
     window.addEventListener("DOMContentLoaded",async()=>{
       if(window.lucide)window.lucide.createIcons();
       document.getElementById("menuBtn")?.addEventListener("click",()=>sidebar?.classList.contains("open")?closeMenu():openMenu());
       backdrop?.addEventListener("click",closeMenu);sidebar?.querySelectorAll("a").forEach(link=>link.addEventListener("click",closeMenu));
       document.addEventListener("keydown",event=>{if(event.key==="Escape")closeMenu()});
-      document.getElementById("generatorFrame")?.addEventListener("load",()=>{if(securedToolUrl)document.getElementById("frameLoader")?.classList.add("is-hidden")});
-      document.getElementById("reloadToolBtn")?.addEventListener("click",()=>loadSecuredTool().catch(()=>{}));
-      document.getElementById("wakeToolBtn")?.addEventListener("click",async event=>{
-        event.preventDefault();
-        const response=await fetch("/api/digitalizer/token",{credentials:"include",cache:"no-store"});
-        const result=await response.json().catch(()=>({}));
-        if(!response.ok||!result.token)return loadSecuredTool().catch(()=>{});
-        const params=new URLSearchParams({festholic_token:result.token});
-        window.open(`${toolBaseUrl}?${params}`,"_blank","noopener,noreferrer");
-      });
+      document.getElementById("generatorFrame")?.addEventListener("load",()=>document.getElementById("frameLoader")?.classList.add("is-hidden"),{once:true});
+      document.getElementById("reloadToolBtn")?.addEventListener("click",()=>{const frame=document.getElementById("generatorFrame"),loader=document.getElementById("frameLoader");loader?.classList.remove("is-hidden");if(frame)frame.src=`https://festholic-generador-entradas.streamlit.app/?embed=true&embed_options=dark_theme&reload=${Date.now()}`});
       try{
         const response=await fetch("/api/auth/session",{credentials:"include",cache:"no-store"}),result=await response.json(),user=result.user||{},identity=user.name||user.email||"Festholic";
         const initials=identity.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase()||"FH",avatar=document.getElementById("userAvatar");
         document.getElementById("userAvatarInitials").textContent=user.avatarUrl?"":initials;
         if(user.avatarUrl){avatar.style.backgroundImage=`url("${user.avatarUrl}")`;avatar.style.backgroundSize="cover";avatar.style.backgroundPosition="center"}
         avatar.title=user.name||user.email||"Usuario activo";document.getElementById("adminNavLink").hidden=user.role!=="owner";
-        await loadSecuredTool();
       }catch(_){}
     });
     document.getElementById("logoutBtn")?.addEventListener("click",async event=>{const button=event.currentTarget;button.disabled=true;button.innerHTML='<i data-lucide="loader-circle"></i><span>Cerrando...</span>';if(window.lucide)window.lucide.createIcons();await fetch("/api/auth/logout",{method:"POST",credentials:"include"}).catch(()=>{});location.replace("/login.html")});
