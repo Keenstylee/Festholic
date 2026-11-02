@@ -40,10 +40,11 @@ async function loadUsers() {
   const data = await api(`/api/admin/users?q=${encodeURIComponent($("#userSearch").value)}`);
   $("#userList").innerHTML = data.users.map((user) => `
     <article class="user-row" data-user="${esc(user.id)}">
-      <div><strong>${esc(user.name)}</strong><small>${esc(user.email)}</small><small class="user-resource-summary">${Number(user.event_count || 0)} eventos · ${Number(user.ticket_count || 0)} entradas · ${Number(user.client_count || 0)} clientes · ${Number(user.file_count || 0)} archivos · ${formatBytes(user.storage_bytes)}</small></div>
+      <div><strong>${esc(user.name)}</strong><small>${esc(user.email)}</small><small class="user-resource-summary">${Number(user.event_count || 0)} eventos · ${Number(user.ticket_count || 0)} entradas · ${Number(user.client_count || 0)} clientes · ${Number(user.digitalizer_generated || 0)} digitalizadas · ${Number(user.file_count || 0)} archivos · ${formatBytes(user.storage_bytes)}</small></div>
       <select data-field="experience"><option value="promoter" ${user.experience === "promoter" ? "selected" : ""}>Promotor</option><option value="attendee" ${user.experience === "attendee" ? "selected" : ""}>Asistente</option><option value="media" ${user.experience === "media" ? "selected" : ""}>Media partner</option></select>
       <select data-field="role"><option value="promoter" ${user.role === "promoter" ? "selected" : ""}>Usuario</option><option value="owner" ${user.role === "owner" ? "selected" : ""}>Administrador</option></select>
       <select data-field="status"><option value="active" ${user.status === "active" ? "selected" : ""}>Activo</option><option value="disabled" ${user.status === "disabled" ? "selected" : ""}>Bloqueado</option></select>
+      <select data-field="digitalizerAccess" aria-label="Acceso al digitalizador" ${user.role === "owner" ? "disabled" : ""}><option value="active" ${user.digitalizer_access === "active" ? "selected" : ""}>Digitalizador autorizado</option><option value="revoked" ${user.digitalizer_access !== "active" ? "selected" : ""}>Digitalizador sin acceso</option></select>
       <button class="btn save-user">Guardar</button>
     </article>`).join("") || "<p>No se encontraron usuarios.</p>";
 }
@@ -73,8 +74,9 @@ document.addEventListener("click", async (event) => {
   const value = (name) => row.querySelector(`[data-field='${name}']`).value;
   button.disabled = true;
   try {
-    await api(`/api/admin/users/${encodeURIComponent(row.dataset.user)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ experience: value("experience"), role: value("role"), status: value("status") }) });
-    notify("Cuenta actualizada. Sus sesiones anteriores fueron cerradas.");
+    const accessField = row.querySelector("[data-field='digitalizerAccess']");
+    await api(`/api/admin/users/${encodeURIComponent(row.dataset.user)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ experience: value("experience"), role: value("role"), status: value("status"), digitalizerAccess: accessField?.value || "active" }) });
+    notify("Cuenta y acceso al digitalizador actualizados.");
     await Promise.all([loadOverview(), loadUsers()]);
   } catch (error) { notify(error.message, true); }
   finally { button.disabled = false; }

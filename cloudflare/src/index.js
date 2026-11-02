@@ -27,6 +27,7 @@ const SESSION_COOKIE = "iampromote_session";
 const GOOGLE_OAUTH_COOKIE = "festholic_google_oauth";
 const GOOGLE_OAUTH_MAX_AGE = 60 * 10;
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
+const DIGITALIZER_TOKEN_MAX_AGE = 60 * 5;
 const OWNER_USER_ID = "owner-keenscy";
 // Cloudflare Workers Web Crypto admite hasta 100 000 iteraciones PBKDF2.
 const PASSWORD_ITERATIONS = 100000;
@@ -115,6 +116,14 @@ export default {
         : json({ authenticated: false }, 401, cors);
     }
 
+    if (url.pathname === "/api/digitalizer/verify" && request.method === "POST") {
+      return handleDigitalizerVerify(request, env, cors);
+    }
+
+    if (url.pathname === "/api/digitalizer/generation" && request.method === "POST") {
+      return handleDigitalizerGeneration(request, env, cors);
+    }
+
     const auth = await getAuthContext(request, env);
     if (!auth) {
       return json({ error: "No autorizado" }, 401, cors);
@@ -135,6 +144,20 @@ async function route(request, env, url, auth) {
   const { method } = request;
   const path = url.pathname;
   const ownerId = auth.userId;
+
+  if (method === "GET" && path === "/api/digitalizer/token") {
+    if (!(await hasDigitalizerAccess(env, auth))) {
+      return json({ error: "Tu cuenta no tiene acceso activo al digitalizador" }, 403);
+    }
+    if (!env.SESSION_SECRET) return json({ error: "El acceso seguro no esta configurado" }, 503);
+    const token = await createDigitalizerToken(auth, env);
+    return json({
+      ok: true,
+      token,
+      expiresIn: DIGITALIZER_TOKEN_MAX_AGE,
+      user: { id: auth.userId, name: auth.name, email: auth.email },
+    });
+  }
 
   if (method === "POST" && path === "/api/auth/change-password") {
     if (!env.SESSION_SECRET) return json({ error: "El sistema de sesiones aun no esta configurado" }, 503);
@@ -252,6 +275,9 @@ async function route(request, env, url, auth) {
       const pattern = `%${query}%`;
       const result = await env.DB.prepare(
         `SELECT u.id, u.email, u.name, u.role, u.status, u.experience, u.created_at, u.updated_at,
+                CASE WHEN u.role = 'owner' THEN 'active' ELSE COALESCE(da.status, 'revoked') END AS digitalizer_access,
+                da.expires_at AS digitalizer_expires_at,
+                (SELECT COALESCE(SUM(du.entry_count), 0) FROM digitalizer_usage du WHERE du.user_id = u.id) AS digitalizer_generated,
                 (SELECT COUNT(*) FROM events e WHERE e.owner_id = u.id AND e.deleted_at IS NULL) AS event_count,
                 (SELECT COUNT(*) FROM tickets t WHERE t.owner_id = u.id AND t.deleted_at IS NULL) AS ticket_count,
                 (SELECT COUNT(*) FROM clients c WHERE c.owner_id = u.id) AS client_count,
@@ -262,6 +288,7 @@ async function route(request, env, url, auth) {
                   + (SELECT COALESCE(SUM(t.file_size), 0) FROM tickets t WHERE t.owner_id = u.id AND t.object_key IS NOT NULL AND t.deleted_at IS NULL)
                   + (SELECT COALESCE(SUM(e.flyer_file_size), 0) FROM events e WHERE e.owner_id = u.id AND e.flyer_object_key IS NOT NULL AND e.deleted_at IS NULL) AS storage_bytes
          FROM users u
+         LEFT JOIN digitalizer_access da ON da.user_id = u.id
          WHERE (? = '' OR u.name LIKE ? OR u.email LIKE ?)
          ORDER BY u.created_at DESC LIMIT 200`
       ).bind(query, pattern, pattern).all();
@@ -289,15 +316,25 @@ async function route(request, env, url, auth) {
       const status = String(body.status || "");
       const role = String(body.role || "");
       const experience = String(body.experience || "");
+      const digitalizerAccess = String(body.digitalizerAccess || "revoked");
       if (!new Set(["active", "disabled"]).has(status) || !new Set(["owner", "promoter"]).has(role) || !EXPERIENCES.has(experience)) {
         return json({ error: "Datos de cuenta no validos" }, 400);
+      }
+      if (!new Set(["active", "revoked"]).has(digitalizerAccess)) {
+        return json({ error: "Permiso del digitalizador no valido" }, 400);
       }
       if (targetId === ownerId && (status !== "active" || role !== "owner")) {
         return json({ error: "No puedes bloquear ni quitar permisos a tu propia cuenta" }, 400);
       }
       await env.DB.prepare("UPDATE users SET status = ?, role = ?, experience = ?, session_version = session_version + 1, updated_at = ? WHERE id = ?")
         .bind(status, role, experience, Date.now(), targetId).run();
-      await writeSecurityAudit(request, env, { userId: targetId, actorUserId: ownerId, action: "account_permissions_changed", detail: `Estado: ${status}; rol: ${role}; experiencia: ${experience}` });
+      const now = Date.now();
+      await env.DB.prepare(
+        `INSERT INTO digitalizer_access (user_id, status, expires_at, granted_by, created_at, updated_at)
+         VALUES (?, ?, NULL, ?, ?, ?)
+         ON CONFLICT(user_id) DO UPDATE SET status = excluded.status, expires_at = NULL, granted_by = excluded.granted_by, updated_at = excluded.updated_at`
+      ).bind(targetId, role === "owner" ? "active" : digitalizerAccess, ownerId, now, now).run();
+      await writeSecurityAudit(request, env, { userId: targetId, actorUserId: ownerId, action: "account_permissions_changed", detail: `Estado: ${status}; rol: ${role}; experiencia: ${experience}; digitalizador: ${role === "owner" ? "active" : digitalizerAccess}` });
       return json({ ok: true });
     }
 
@@ -1386,6 +1423,89 @@ function envlessActivityStatement(db, ownerId, type, title, detail, entityType, 
      (id, type, title, detail, entity_type, entity_id, created_at, owner_id)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(crypto.randomUUID(), type, title, detail, entityType, entityId, Date.now(), ownerId);
+}
+
+async function hasDigitalizerAccess(env, auth) {
+  if (!auth?.userId) return false;
+  if (auth.role === "owner" || auth.userId === OWNER_USER_ID) return true;
+  const access = await env.DB.prepare(
+    `SELECT status, expires_at FROM digitalizer_access WHERE user_id = ?`
+  ).bind(auth.userId).first();
+  return access?.status === "active" && (!access.expires_at || Number(access.expires_at) > Date.now());
+}
+
+async function createDigitalizerToken(auth, env) {
+  const tokenId = crypto.randomUUID();
+  const expiresAt = Date.now() + DIGITALIZER_TOKEN_MAX_AGE * 1000;
+  const payload = toBase64Url(new TextEncoder().encode(JSON.stringify({
+    scope: "digitalizer",
+    jti: tokenId,
+    userId: auth.userId,
+    email: auth.email,
+    exp: Math.floor(Date.now() / 1000) + DIGITALIZER_TOKEN_MAX_AGE,
+  })));
+  await env.DB.prepare(
+    "DELETE FROM digitalizer_tokens WHERE user_id = ? AND expires_at <= ?"
+  ).bind(auth.userId, Date.now()).run();
+  await env.DB.prepare(
+    "INSERT INTO digitalizer_tokens (id, user_id, expires_at, used_at, created_at) VALUES (?, ?, ?, NULL, ?)"
+  ).bind(tokenId, auth.userId, expiresAt, Date.now()).run();
+  return `${payload}.${await signSessionPayload(payload, env.SESSION_SECRET)}`;
+}
+
+async function verifyDigitalizerToken(token, env, consume = false) {
+  if (!env.SESSION_SECRET || !token.includes(".")) return null;
+  const [payload, signature] = token.split(".");
+  if (!payload || !signature || !(await verifySessionSignature(payload, signature, env.SESSION_SECRET))) return null;
+  try {
+    const claims = JSON.parse(new TextDecoder().decode(fromBase64Url(payload)));
+    if (claims.scope !== "digitalizer" || claims.exp <= Math.floor(Date.now() / 1000) || !claims.userId || !claims.jti) return null;
+    const issued = await env.DB.prepare(
+      "SELECT id, used_at FROM digitalizer_tokens WHERE id = ? AND user_id = ? AND expires_at > ?"
+    ).bind(claims.jti, claims.userId, Date.now()).first();
+    if (!issued || (consume && issued.used_at)) return null;
+    const user = await env.DB.prepare(
+      "SELECT id, email, name, role, status, experience FROM users WHERE id = ?"
+    ).bind(claims.userId).first();
+    if (!user || user.status !== "active" || !(await hasDigitalizerAccess(env, { userId: user.id, role: user.role }))) return null;
+    if (consume) {
+      const consumed = await env.DB.prepare(
+        "UPDATE digitalizer_tokens SET used_at = ? WHERE id = ? AND used_at IS NULL"
+      ).bind(Date.now(), claims.jti).run();
+      if (!Number(consumed.meta?.changes || 0)) return null;
+    }
+    return user;
+  } catch {
+    return null;
+  }
+}
+
+async function handleDigitalizerVerify(request, env, cors) {
+  try {
+    const body = await readJson(request);
+    const user = await verifyDigitalizerToken(String(body.token || ""), env, true);
+    if (!user) return json({ allowed: false, error: "Acceso no autorizado o vencido" }, 403, cors);
+    return json({ allowed: true, user: { id: user.id, email: user.email, name: user.name } }, 200, cors);
+  } catch {
+    return json({ allowed: false, error: "Solicitud de acceso no valida" }, 400, cors);
+  }
+}
+
+async function handleDigitalizerGeneration(request, env, cors) {
+  try {
+    const body = await readJson(request);
+    const user = await verifyDigitalizerToken(String(body.token || ""), env);
+    if (!user) return json({ ok: false, error: "Acceso no autorizado o vencido" }, 403, cors);
+    const entryCount = Math.max(1, Math.min(500, Number.parseInt(body.entryCount, 10) || 1));
+    const mode = body.mode === "batch" ? "batch" : "single";
+    const eventId = String(body.eventId || "").slice(0, 120);
+    await env.DB.prepare(
+      "INSERT INTO digitalizer_usage (id, user_id, entry_count, mode, event_id, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+    ).bind(crypto.randomUUID(), user.id, entryCount, mode, eventId, Date.now()).run();
+    return json({ ok: true }, 201, cors);
+  } catch {
+    return json({ ok: false, error: "No se pudo registrar la generacion" }, 400, cors);
+  }
 }
 
 async function readJson(request) {
