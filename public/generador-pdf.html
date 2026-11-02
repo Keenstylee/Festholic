@@ -59,7 +59,7 @@
           <div><p class="eyebrow">Herramienta integrada</p><h2 id="generatorTitle">Digitalizador de entradas</h2><p>Sube una entrada, reconstruye su código QR y actualiza los datos del evento sin salir del panel de promotores.</p></div>
           <div class="generator-status" id="generatorAccessStatus"><i data-lucide="shield-check"></i>Verificando acceso</div>
         </section>
-        <div class="streamlit-help"><i data-lucide="moon-star"></i><span><strong>Acceso protegido.</strong> Solo las cuentas autorizadas pueden abrir y utilizar el digitalizador.</span><a id="wakeToolBtn" href="#" target="_blank" rel="noopener noreferrer" hidden>Reactivar herramienta</a><button id="reloadToolBtn" type="button" hidden>Volver a cargar</button></div>
+        <div class="streamlit-help"><i data-lucide="moon-star"></i><span><strong>Herramienta disponible.</strong> El digitalizador está abierto para todos los usuarios durante esta etapa.</span><a id="wakeToolBtn" href="#" target="_blank" rel="noopener noreferrer" hidden>Reactivar herramienta</a><button id="reloadToolBtn" type="button" hidden>Volver a cargar</button></div>
         <section class="generator-card" aria-label="Digitalizador de entradas">
           <div class="frame-loader" id="frameLoader" role="status" aria-live="polite"><i data-lucide="loader-circle"></i><strong>Cargando el digitalizador…</strong><span>Esto puede tardar unos segundos.</span></div>
           <iframe id="generatorFrame" class="generator-frame" src="about:blank" title="Digitalizador de entradas de Festholic" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
@@ -88,9 +88,9 @@
       const response=await fetch("/api/digitalizer/token",{credentials:"include",cache:"no-store"});
       const result=await response.json().catch(()=>({}));
       if(!response.ok||!result.token){
-        if(status)status.innerHTML='<i data-lucide="lock-keyhole"></i>Acceso no autorizado';
-        if(loader)loader.innerHTML='<i data-lucide="lock-keyhole"></i><strong>Tu cuenta no tiene acceso</strong><span>Solicita autorización para utilizar el digitalizador.</span>';
-        if(fallback)fallback.textContent="El administrador debe habilitar el permiso Digitalizador en tu cuenta.";
+        if(status)status.innerHTML='<i data-lucide="circle-alert"></i>No disponible temporalmente';
+        if(loader)loader.innerHTML='<i data-lucide="circle-alert"></i><strong>No se pudo abrir la herramienta</strong><span>Vuelve a intentarlo en unos segundos.</span>';
+        if(fallback)fallback.textContent="El digitalizador está abierto para todos los usuarios; vuelve a cargar la página.";
         wake?.setAttribute("hidden","");reload?.setAttribute("hidden","");window.lucide?.createIcons();return;
       }
       const params=new URLSearchParams({embed:"true",embed_options:"dark_theme",festholic_token:result.token});

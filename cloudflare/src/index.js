@@ -1426,12 +1426,9 @@ function envlessActivityStatement(db, ownerId, type, title, detail, entityType, 
 }
 
 async function hasDigitalizerAccess(env, auth) {
-  if (!auth?.userId) return false;
-  if (auth.role === "owner" || auth.userId === OWNER_USER_ID) return true;
-  const access = await env.DB.prepare(
-    `SELECT status, expires_at FROM digitalizer_access WHERE user_id = ?`
-  ).bind(auth.userId).first();
-  return access?.status === "active" && (!access.expires_at || Number(access.expires_at) > Date.now());
+  // Acceso abierto durante la etapa de crecimiento. La tabla de permisos queda
+  // preparada para activar planes pagados más adelante sin migrar nuevamente.
+  return Boolean(auth?.userId);
 }
 
 async function createDigitalizerToken(auth, env) {
