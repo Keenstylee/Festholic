@@ -150,10 +150,19 @@ async function route(request, env, url, auth) {
       return json({ error: "Tu cuenta no tiene acceso activo al digitalizador" }, 403);
     }
     if (!env.SESSION_SECRET) return json({ error: "El acceso seguro no esta configurado" }, 503);
-    const token = await createDigitalizerToken(auth, env);
+    const [token, historicUsage, currentUsage] = await Promise.all([
+      createDigitalizerToken(auth, env),
+      env.DB.prepare(
+        "SELECT COALESCE(SUM(entry_count), 0) AS total FROM digitalizer_generations WHERE user_id = ?"
+      ).bind(ownerId).first(),
+      env.DB.prepare(
+        "SELECT COALESCE(SUM(entry_count), 0) AS total FROM digitalizer_usage WHERE user_id = ?"
+      ).bind(ownerId).first(),
+    ]);
     return json({
       ok: true,
       token,
+      generatedCount: Number(historicUsage?.total || 0) + Number(currentUsage?.total || 0),
       expiresIn: DIGITALIZER_TOKEN_MAX_AGE,
       user: { id: auth.userId, name: auth.name, email: auth.email },
     });
@@ -256,7 +265,7 @@ async function route(request, env, url, auth) {
     if (auth.role !== "owner") return json({ error: "Acceso exclusivo para administradores" }, 403);
 
     if (method === "GET" && path === "/api/admin/overview") {
-      const [users, active, support, deletion, promoters, events, tickets, sold, checkins] = await Promise.all([
+      const [users, active, support, deletion, promoters, events, tickets, sold, checkins, historicDigitalized, currentDigitalized] = await Promise.all([
         env.DB.prepare("SELECT COUNT(*) AS total FROM users").first(),
         env.DB.prepare("SELECT COUNT(*) AS total FROM users WHERE status = 'active'").first(),
         env.DB.prepare("SELECT COUNT(*) AS total FROM support_requests WHERE status = 'open'").first(),
@@ -266,8 +275,10 @@ async function route(request, env, url, auth) {
         env.DB.prepare("SELECT COUNT(*) AS total FROM tickets WHERE deleted_at IS NULL").first(),
         env.DB.prepare("SELECT COUNT(*) AS total FROM tickets WHERE status IN ('sold','delivered') AND deleted_at IS NULL").first(),
         env.DB.prepare("SELECT COUNT(*) AS total FROM tickets WHERE checked_in_at IS NOT NULL AND deleted_at IS NULL").first(),
+        env.DB.prepare("SELECT COALESCE(SUM(entry_count), 0) AS total FROM digitalizer_generations").first(),
+        env.DB.prepare("SELECT COALESCE(SUM(entry_count), 0) AS total FROM digitalizer_usage").first(),
       ]);
-      return json({ users: Number(users?.total || 0), active: Number(active?.total || 0), support: Number(support?.total || 0), deletion: Number(deletion?.total || 0), promoters: Number(promoters?.total || 0), events: Number(events?.total || 0), tickets: Number(tickets?.total || 0), sold: Number(sold?.total || 0), checkins: Number(checkins?.total || 0) });
+      return json({ users: Number(users?.total || 0), active: Number(active?.total || 0), support: Number(support?.total || 0), deletion: Number(deletion?.total || 0), promoters: Number(promoters?.total || 0), events: Number(events?.total || 0), tickets: Number(tickets?.total || 0), sold: Number(sold?.total || 0), checkins: Number(checkins?.total || 0), digitalized: Number(historicDigitalized?.total || 0) + Number(currentDigitalized?.total || 0) });
     }
 
     if (method === "GET" && path === "/api/admin/users") {
@@ -277,7 +288,8 @@ async function route(request, env, url, auth) {
         `SELECT u.id, u.email, u.name, u.role, u.status, u.experience, u.created_at, u.updated_at,
                 CASE WHEN u.role = 'owner' THEN 'active' ELSE COALESCE(da.status, 'revoked') END AS digitalizer_access,
                 da.expires_at AS digitalizer_expires_at,
-                (SELECT COALESCE(SUM(du.entry_count), 0) FROM digitalizer_usage du WHERE du.user_id = u.id) AS digitalizer_generated,
+                (SELECT COALESCE(SUM(g.entry_count), 0) FROM digitalizer_generations g WHERE g.user_id = u.id)
+                  + (SELECT COALESCE(SUM(du.entry_count), 0) FROM digitalizer_usage du WHERE du.user_id = u.id) AS digitalized_count,
                 (SELECT COUNT(*) FROM events e WHERE e.owner_id = u.id AND e.deleted_at IS NULL) AS event_count,
                 (SELECT COUNT(*) FROM tickets t WHERE t.owner_id = u.id AND t.deleted_at IS NULL) AS ticket_count,
                 (SELECT COUNT(*) FROM clients c WHERE c.owner_id = u.id) AS client_count,
