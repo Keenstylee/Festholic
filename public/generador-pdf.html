@@ -61,7 +61,6 @@
             <div class="frame-loader__bar" aria-hidden="true"></div>
             <div class="frame-loader__actions"><button id="showFrameBtn" type="button">Mostrar herramienta</button><button id="retryFrameBtn" type="button">Reintentar carga</button></div>
           </div>
-          <div class="wake-toolbar" id="wakeToolbar"><span>¿Streamlit sigue activándose?</span><button id="retryFrameToolbarBtn" type="button">Reintentar</button><a href="https://festholic-generador-entradas.streamlit.app" target="_blank" rel="noopener noreferrer">Abrir directamente</a></div>
           <iframe id="generatorFrame" class="generator-frame" data-src="https://festholic-generador-entradas.streamlit.app/?embed=true&embed_options=dark_theme" title="Digitalizador de entradas de Festholic" loading="eager" allow="clipboard-read; clipboard-write"></iframe>
         </section>
       </div>
@@ -86,13 +85,13 @@
       document.getElementById("menuBtn")?.addEventListener("click",()=>sidebar?.classList.contains("open")?closeMenu():openMenu());
       backdrop?.addEventListener("click",closeMenu);sidebar?.querySelectorAll("a").forEach(link=>link.addEventListener("click",closeMenu));
       document.addEventListener("keydown",event=>{if(event.key==="Escape")closeMenu()});
-      const generatorFrame=document.getElementById("generatorFrame"),generatorUrl=generatorFrame?.dataset.src||"",frameLoader=document.getElementById("frameLoader"),wakeToolbar=document.getElementById("wakeToolbar");
-      let activeGeneratorUrl=generatorUrl,revealTimer=0,toolbarTimer=0,frameLoads=0;
-      const revealFrame=()=>{clearTimeout(revealTimer);frameLoader?.classList.add("is-hidden");wakeToolbar?.classList.add("is-visible");sessionStorage.setItem("festholicDigitalizerWarm","1");clearTimeout(toolbarTimer);toolbarTimer=window.setTimeout(()=>wakeToolbar?.classList.remove("is-visible"),45000)};
-      const loadGenerator=(url,{retry=false}={})=>{activeGeneratorUrl=url||generatorUrl;frameLoads=0;clearTimeout(revealTimer);clearTimeout(toolbarTimer);frameLoader?.classList.remove("is-hidden");wakeToolbar?.classList.remove("is-visible");const title=document.getElementById("frameLoaderTitle"),copy=document.getElementById("frameLoaderCopy");if(title)title.textContent=retry?"Reintentando la activación…":"Activando el digitalizador…";if(copy)copy.textContent="Si la herramienta estaba en reposo, Streamlit puede tardar unos segundos en despertarla.";const separator=activeGeneratorUrl.includes("?")?"&":"?";if(generatorFrame)generatorFrame.src=`${activeGeneratorUrl}${separator}wake=${Date.now()}`;const warm=sessionStorage.getItem("festholicDigitalizerWarm")==="1"&&!retry;revealTimer=window.setTimeout(revealFrame,warm?1200:8000)};
+      const generatorFrame=document.getElementById("generatorFrame"),generatorUrl=generatorFrame?.dataset.src||"",frameLoader=document.getElementById("frameLoader");
+      let activeGeneratorUrl=generatorUrl,revealTimer=0,frameLoads=0;
+      const revealFrame=()=>{clearTimeout(revealTimer);frameLoader?.classList.add("is-hidden");sessionStorage.setItem("festholicDigitalizerWarm","1")};
+      const loadGenerator=(url,{retry=false}={})=>{activeGeneratorUrl=url||generatorUrl;frameLoads=0;clearTimeout(revealTimer);frameLoader?.classList.remove("is-hidden");const title=document.getElementById("frameLoaderTitle"),copy=document.getElementById("frameLoaderCopy");if(title)title.textContent=retry?"Reintentando la activación…":"Activando el digitalizador…";if(copy)copy.textContent="Si la herramienta estaba en reposo, Streamlit puede tardar unos segundos en despertarla.";const separator=activeGeneratorUrl.includes("?")?"&":"?";if(generatorFrame)generatorFrame.src=`${activeGeneratorUrl}${separator}wake=${Date.now()}`;const warm=sessionStorage.getItem("festholicDigitalizerWarm")==="1"&&!retry;revealTimer=window.setTimeout(revealFrame,warm?1200:8000)};
       const retryGenerator=()=>loadGenerator(activeGeneratorUrl,{retry:true});
       generatorFrame?.addEventListener("load",()=>{frameLoads+=1;window.setTimeout(revealFrame,350)});
-      document.getElementById("showFrameBtn")?.addEventListener("click",revealFrame);document.getElementById("retryFrameBtn")?.addEventListener("click",retryGenerator);document.getElementById("retryFrameToolbarBtn")?.addEventListener("click",retryGenerator);
+      document.getElementById("showFrameBtn")?.addEventListener("click",revealFrame);document.getElementById("retryFrameBtn")?.addEventListener("click",retryGenerator);
       try{
         const response=await fetch("/api/auth/session",{credentials:"include",cache:"no-store"}),result=await response.json(),user=result.user||{},identity=user.name||user.email||"Festholic";
         const initials=identity.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]).join("").toUpperCase()||"FH",avatar=document.getElementById("userAvatar");
