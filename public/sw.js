@@ -1,4 +1,4 @@
-const CACHE = "festholic-20261104-auth-next-v79";
+const CACHE = "festholic-20261104-auto-reveal-digitalizer-v80";
 
 const ASSETS = [
   "./",
