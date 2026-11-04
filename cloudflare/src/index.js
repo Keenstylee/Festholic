@@ -27,7 +27,10 @@ const SESSION_COOKIE = "iampromote_session";
 const GOOGLE_OAUTH_COOKIE = "festholic_google_oauth";
 const GOOGLE_OAUTH_MAX_AGE = 60 * 10;
 const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
-const DIGITALIZER_TOKEN_MAX_AGE = 60 * 5;
+// Una sesión de edición puede durar bastante más que unos minutos. El usuario
+// se valida nuevamente contra la base en cada generación, por lo que mantener
+// el token durante una jornada no conserva acceso a cuentas desactivadas.
+const DIGITALIZER_TOKEN_MAX_AGE = 60 * 60 * 24;
 const OWNER_USER_ID = "owner-keenscy";
 // Cloudflare Workers Web Crypto admite hasta 100 000 iteraciones PBKDF2.
 const PASSWORD_ITERATIONS = 100000;
@@ -1507,11 +1510,11 @@ async function handleDigitalizerGeneration(request, env, cors) {
     if (!user) return json({ ok: false, error: "Acceso no autorizado o vencido" }, 403, cors);
     const entryCount = Math.max(1, Math.min(500, Number.parseInt(body.entryCount, 10) || 1));
     const mode = body.mode === "batch" ? "batch" : "single";
-    const eventId = String(body.eventId || "").slice(0, 120);
-    await env.DB.prepare(
-      "INSERT INTO digitalizer_usage (id, user_id, entry_count, mode, event_id, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+    const eventId = String(body.eventId || crypto.randomUUID()).slice(0, 120);
+    const result = await env.DB.prepare(
+      "INSERT OR IGNORE INTO digitalizer_usage (id, user_id, entry_count, mode, event_id, created_at) VALUES (?, ?, ?, ?, ?, ?)"
     ).bind(crypto.randomUUID(), user.id, entryCount, mode, eventId, Date.now()).run();
-    return json({ ok: true }, 201, cors);
+    return json({ ok: true, recorded: Number(result.meta?.changes || 0) > 0 }, 201, cors);
   } catch {
     return json({ ok: false, error: "No se pudo registrar la generacion" }, 400, cors);
   }
