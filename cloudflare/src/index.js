@@ -1766,6 +1766,7 @@ async function handleRegister(request, env, cors) {
   const experience = EXPERIENCES.has(String(body.experience || "").toLowerCase())
     ? String(body.experience).toLowerCase()
     : "promoter";
+  const next = safeLocalPath(body.next);
   if (name.length < 2 || name.length > 80) return json({ error: "Ingresa un nombre valido" }, 400, cors);
   if (!isValidEmail(email) || email.length > 160) return json({ error: "Ingresa un correo valido" }, 400, cors);
   if (password.length < 10 || password.length > 128) {
@@ -1801,7 +1802,7 @@ async function handleRegister(request, env, cors) {
   }
   if (requiresVerification) {
     try {
-      await createAndSendVerification(env, { id: userId, email, name }, new URL(request.url).origin);
+      await createAndSendVerification(env, { id: userId, email, name }, new URL(request.url).origin, next);
     } catch (error) {
       console.error("Verification email failed", error);
       await env.DB.batch([
@@ -1830,6 +1831,7 @@ async function handleResendVerification(request, env, cors) {
   }
   const body = await request.json().catch(() => ({}));
   const email = String(body.email || "").trim().toLowerCase();
+  const next = safeLocalPath(body.next);
   const generic = {
     ok: true,
     message: "Si existe una cuenta pendiente, enviaremos un nuevo enlace de verificacion.",
@@ -1849,7 +1851,7 @@ async function handleResendVerification(request, env, cors) {
   }
 
   try {
-    await createAndSendVerification(env, user, new URL(request.url).origin);
+    await createAndSendVerification(env, user, new URL(request.url).origin, next);
   } catch (error) {
     console.error("Verification email resend failed", error);
     return json({ error: "No pudimos reenviar el correo. Intenta en unos minutos." }, 502, cors);
@@ -1859,7 +1861,9 @@ async function handleResendVerification(request, env, cors) {
 
 async function handleVerifyEmail(request, env, url) {
   const token = String(url.searchParams.get("token") || "");
+  const next = safeLocalPath(url.searchParams.get("next"));
   const redirect = new URL("/login", url.origin);
+  if (next) redirect.searchParams.set("next", next);
   if (!token || token.length > 256) {
     redirect.searchParams.set("verification", "invalid");
     return Response.redirect(redirect.toString(), 303);
@@ -2070,7 +2074,7 @@ async function consumeAuthAttempt(request, env, action, limit, windowSeconds) {
   return true;
 }
 
-async function createAndSendVerification(env, user, origin) {
+async function createAndSendVerification(env, user, origin, next = "") {
   const rawToken = toBase64Url(crypto.getRandomValues(new Uint8Array(32)));
   const tokenHash = await sha256Base64Url(rawToken);
   const now = Date.now();
@@ -2084,6 +2088,8 @@ async function createAndSendVerification(env, user, origin) {
 
   const verifyUrl = new URL("/api/auth/verify", origin);
   verifyUrl.searchParams.set("token", rawToken);
+  const safeNext = safeLocalPath(next);
+  if (safeNext) verifyUrl.searchParams.set("next", safeNext);
   try {
     await sendVerificationEmail(env, user, verifyUrl.toString());
   } catch (error) {

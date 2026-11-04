@@ -1,4 +1,4 @@
-const CACHE = "festholic-20261104-mobile-keyboard-scroll-v78";
+const CACHE = "festholic-20261104-auth-next-v79";
 
 const ASSETS = [
   "./",

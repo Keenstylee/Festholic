@@ -13,11 +13,29 @@ const verificationResendButton = document.querySelector("#verificationResendButt
 const googleLoginButton = document.querySelector("#googleLoginButton");
 const socialAuth = document.querySelector("#socialAuth");
 let pendingVerificationEmail = "";
+const PENDING_DESTINATION_KEY = "festholic-auth-next";
+
+function requestedDestination() {
+  const value = new URLSearchParams(location.search).get("next");
+  if (value && value.startsWith("/") && !value.startsWith("//")) {
+    localStorage.setItem(PENDING_DESTINATION_KEY, value);
+    return value;
+  }
+  const pending = localStorage.getItem(PENDING_DESTINATION_KEY);
+  return pending && pending.startsWith("/") && !pending.startsWith("//") ? pending : "";
+}
+
+function consumeDestination(user = {}) {
+  const next = requestedDestination();
+  if (next) {
+    localStorage.removeItem(PENDING_DESTINATION_KEY);
+    return next;
+  }
+  return ({ attendee: "/fan.html", media: "/media.html", promoter: "/index.html" })[user.experience] || "/experiencia.html";
+}
 
 function destination(user = {}) {
-  const value = new URLSearchParams(location.search).get("next");
-  if (value && value.startsWith("/") && !value.startsWith("//")) return value;
-  return ({ attendee: "/fan.html", media: "/media.html", promoter: "/index.html" })[user.experience] || "/experiencia.html";
+  return consumeDestination(user);
 }
 
 function showError(element, message) {
@@ -73,7 +91,7 @@ async function resendVerification(button, email = pendingVerificationEmail) {
     const response = await fetch("/api/auth/resend-verification", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, next: requestedDestination() }),
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || "No se pudo reenviar el correo.");
@@ -87,8 +105,8 @@ async function resendVerification(button, email = pendingVerificationEmail) {
 
 googleLoginButton.addEventListener("click", () => {
   const params = new URLSearchParams();
-  const next = new URLSearchParams(location.search).get("next");
-  if (next && next.startsWith("/") && !next.startsWith("//")) params.set("next", next);
+  const next = requestedDestination();
+  if (next) params.set("next", next);
   const registering = registerTab.classList.contains("active");
   params.set("experience", registering ? new FormData(registerForm).get("experience") || "attendee" : "attendee");
   location.assign(`/api/auth/google?${params}`);
@@ -171,7 +189,7 @@ registerForm.addEventListener("submit", async (event) => {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: name.value.trim(), email: email.value.trim(), password: password.value, experience: new FormData(registerForm).get("experience") }),
+      body: JSON.stringify({ name: name.value.trim(), email: email.value.trim(), password: password.value, experience: new FormData(registerForm).get("experience"), next: requestedDestination() }),
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || "No se pudo crear la cuenta.");
@@ -229,6 +247,7 @@ resetForm.addEventListener("submit", async (event) => {
 });
 
 document.addEventListener("DOMContentLoaded", async () => {
+  requestedDestination();
   window.lucide?.createIcons();
   if (new URLSearchParams(location.search).has("reset")) setMode("reset");
   const googleError = new URLSearchParams(location.search).get("google_error");
