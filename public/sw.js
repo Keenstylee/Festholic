@@ -1,4 +1,4 @@
-const CACHE = "festholic-20261104-clean-digitalizer-load-v81";
+const CACHE = "festholic-20261107-mobile-keyboard-scroll-v82";
 
 const ASSETS = [
   "./",
