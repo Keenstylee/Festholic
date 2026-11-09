@@ -1441,9 +1441,13 @@ function envlessActivityStatement(db, ownerId, type, title, detail, entityType, 
 }
 
 async function hasDigitalizerAccess(env, auth) {
-  // Acceso abierto durante la etapa de crecimiento. La tabla de permisos queda
-  // preparada para activar planes pagados más adelante sin migrar nuevamente.
-  return Boolean(auth?.userId);
+  if (!auth?.userId) return false;
+  if (auth.role === "owner") return true;
+  const access = await env.DB.prepare(
+    "SELECT status, expires_at FROM digitalizer_access WHERE user_id = ?"
+  ).bind(auth.userId).first();
+  if (!access || access.status !== "active") return false;
+  return !access.expires_at || Number(access.expires_at) > Date.now();
 }
 
 async function createDigitalizerToken(auth, env) {
@@ -1495,7 +1499,7 @@ async function verifyDigitalizerToken(token, env, consume = false) {
 async function handleDigitalizerVerify(request, env, cors) {
   try {
     const body = await readJson(request);
-    const user = await verifyDigitalizerToken(String(body.token || ""), env, true);
+    const user = await verifyDigitalizerToken(String(body.token || ""), env);
     if (!user) return json({ allowed: false, error: "Acceso no autorizado o vencido" }, 403, cors);
     return json({ allowed: true, user: { id: user.id, email: user.email, name: user.name } }, 200, cors);
   } catch {

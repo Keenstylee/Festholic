@@ -44,6 +44,7 @@ async function loadUsers() {
       <select data-field="experience"><option value="promoter" ${user.experience === "promoter" ? "selected" : ""}>Promotor</option><option value="attendee" ${user.experience === "attendee" ? "selected" : ""}>Asistente</option><option value="media" ${user.experience === "media" ? "selected" : ""}>Media partner</option></select>
       <select data-field="role"><option value="promoter" ${user.role === "promoter" ? "selected" : ""}>Usuario</option><option value="owner" ${user.role === "owner" ? "selected" : ""}>Administrador</option></select>
       <select data-field="status"><option value="active" ${user.status === "active" ? "selected" : ""}>Activo</option><option value="disabled" ${user.status === "disabled" ? "selected" : ""}>Bloqueado</option></select>
+      <select data-field="digitalizerAccess" aria-label="Acceso al digitalizador"><option value="revoked" ${user.digitalizer_access !== "active" ? "selected" : ""}>Digitalizador bloqueado</option><option value="active" ${user.digitalizer_access === "active" ? "selected" : ""}>Digitalizador autorizado</option></select>
       <button class="btn save-user">Guardar</button>
     </article>`).join("") || "<p>No se encontraron usuarios.</p>";
 }
@@ -73,8 +74,8 @@ document.addEventListener("click", async (event) => {
   const value = (name) => row.querySelector(`[data-field='${name}']`).value;
   button.disabled = true;
   try {
-    await api(`/api/admin/users/${encodeURIComponent(row.dataset.user)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ experience: value("experience"), role: value("role"), status: value("status") }) });
-    notify("Cuenta actualizada. Sus sesiones anteriores fueron cerradas.");
+    await api(`/api/admin/users/${encodeURIComponent(row.dataset.user)}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ experience: value("experience"), role: value("role"), status: value("status"), digitalizerAccess: value("digitalizerAccess") }) });
+    notify("Cuenta y acceso al digitalizador actualizados. Sus sesiones anteriores fueron cerradas.");
     await Promise.all([loadOverview(), loadUsers()]);
   } catch (error) { notify(error.message, true); }
   finally { button.disabled = false; }
