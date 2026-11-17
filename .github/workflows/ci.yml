@@ -22,6 +22,8 @@ jobs:
           for f in package.json manifest.webmanifest fan.webmanifest; do
             if [ -f "$f" ]; then node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))"; fi
           done
+      - name: Pruebas automatizadas de rutas del Worker
+        run: npm test
       - name: Buscar secretos
         run: |
           if git ls-files | grep -E '(^|/)\.dev\.vars$|(^|/)\.env$'; then echo "Archivo de secretos versionado"; exit 1; fi
